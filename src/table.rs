@@ -111,14 +111,14 @@ pub fn format_results(results: &[DayResult]) -> String {
         "│ {:width$} │ {:>time$} │\n",
         "Total",
         format_duration(total_time),
-        width = day_width + part1_width + part2_width + time_width + time_width + 10, // +10 for separators
+        width = day_width + part1_width + part2_width + time_width + time_width + 12, // +12 for 4 separators (3 chars each)
         time = time_width
     ));
 
     // Bottom border
     output.push_str(&format!(
         "└─{}─┴─{}─┘\n",
-        "─".repeat(day_width + part1_width + part2_width + time_width + time_width + 10),
+        "─".repeat(day_width + part1_width + part2_width + time_width + time_width + 12),
         "─".repeat(time_width)
     ));
 
