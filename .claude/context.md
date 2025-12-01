@@ -104,6 +104,10 @@ and revert if needed. It's also educational for others reading the repository.
 
 ## Daily Implementation Checklist
 
+⚠️ **CRITICAL: ALL 8 PHASES ARE REQUIRED** ⚠️
+
+Do not stop after Phase 3 just because the code works. Documentation (Phase 6) and Quality Checks (Phase 7) are mandatory, not optional. A day is not complete until all phases are done.
+
 When implementing a day's puzzle, follow this sequence:
 
 ### Phase 1: Setup & Input Verification
@@ -130,6 +134,8 @@ When implementing a day's puzzle, follow this sequence:
 - [ ] Run Part 2 on actual input
 - [ ] Verify answer is correct
 - [ ] Commit with message: "dayNN: implement part2"
+
+**⚠️ STOP: Before continuing, create todos for Phases 6 & 7 using TodoWrite. The day is NOT complete yet.**
 
 ### Phase 4: Optimization & Benchmarking (if applicable)
 - [ ] If solution is slow (>1s), profile and optimize
