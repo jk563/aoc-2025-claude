@@ -23,7 +23,7 @@ pub fn format_results(results: &[DayResult]) -> String {
     let mut output = String::new();
 
     // Calculate column widths
-    let day_width = 5; // "Day 01" fits comfortably
+    let day_width = 6; // "Day 01" is 6 characters
     let part1_width = results
         .iter()
         .map(|r| r.part1_result.len())
@@ -36,7 +36,8 @@ pub fn format_results(results: &[DayResult]) -> String {
         .max()
         .unwrap_or(10)
         .max(6); // "Part 2" header
-    let time_width = 12; // Wide enough for "1234.56 ms"
+    let time_width = 11; // Fits "Part 1 Time" header and "1234.56 ms" values
+    let total_width = 10; // Fits "Total" header and time values
 
     // Top border
     output.push_str(&format!(
@@ -46,12 +47,12 @@ pub fn format_results(results: &[DayResult]) -> String {
         "─".repeat(part2_width),
         "─".repeat(time_width),
         "─".repeat(time_width),
-        "─".repeat(time_width)
+        "─".repeat(total_width)
     ));
 
     // Header
     output.push_str(&format!(
-        "│ {:^width$} │ {:^part1$} │ {:^part2$} │ {:^time$} │ {:^time$} │ {:^time$} │\n",
+        "│ {:^width$} │ {:^part1$} │ {:^part2$} │ {:^time$} │ {:^time$} │ {:^total$} │\n",
         "Day",
         "Part 1",
         "Part 2",
@@ -61,7 +62,8 @@ pub fn format_results(results: &[DayResult]) -> String {
         width = day_width,
         part1 = part1_width,
         part2 = part2_width,
-        time = time_width
+        time = time_width,
+        total = total_width
     ));
 
     // Header separator
@@ -72,13 +74,13 @@ pub fn format_results(results: &[DayResult]) -> String {
         "─".repeat(part2_width),
         "─".repeat(time_width),
         "─".repeat(time_width),
-        "─".repeat(time_width)
+        "─".repeat(total_width)
     ));
 
     // Data rows
     for result in results {
         output.push_str(&format!(
-            "│ {:>width$} │ {:>part1$} │ {:>part2$} │ {:>time$} │ {:>time$} │ {:>time$} │\n",
+            "│ {:>width$} │ {:>part1$} │ {:>part2$} │ {:>time$} │ {:>time$} │ {:>total$} │\n",
             format!("Day {:02}", result.day_number),
             result.part1_result,
             result.part2_result,
@@ -88,7 +90,8 @@ pub fn format_results(results: &[DayResult]) -> String {
             width = day_width,
             part1 = part1_width,
             part2 = part2_width,
-            time = time_width
+            time = time_width,
+            total = total_width
         ));
     }
 
@@ -103,23 +106,23 @@ pub fn format_results(results: &[DayResult]) -> String {
         "─".repeat(part2_width),
         "─".repeat(time_width),
         "─".repeat(time_width),
-        "─".repeat(time_width)
+        "─".repeat(total_width)
     ));
 
     // Total row
     output.push_str(&format!(
-        "│ {:width$} │ {:>time$} │\n",
+        "│ {:width$} │ {:>total$} │\n",
         "Total",
         format_duration(total_time),
         width = day_width + part1_width + part2_width + time_width + time_width + 12, // +12 for 4 separators (3 chars each)
-        time = time_width
+        total = total_width
     ));
 
     // Bottom border
     output.push_str(&format!(
         "└─{}─┴─{}─┘\n",
         "─".repeat(day_width + part1_width + part2_width + time_width + time_width + 12),
-        "─".repeat(time_width)
+        "─".repeat(total_width)
     ));
 
     output
