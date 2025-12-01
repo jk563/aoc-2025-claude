@@ -164,13 +164,17 @@ When implementing a day's puzzle, follow this sequence:
 - [ ] Commit with message: "dayNN: add documentation"
 
 ### Phase 7: Quality Check
-- [ ] Run full test suite: `just test`
-- [ ] Run benchmarks: `just bench`
+
+**⚠️ ALWAYS use `just` commands, not raw `cargo` commands.**
+
+- [ ] **Run `just ci`** - This runs fmt-check, lint, test, and build in one command
+- [ ] If fmt-check fails, run `just fmt` to fix formatting
+- [ ] Run benchmarks: `just bench` (or `just bench-day N`)
 - [ ] Generate and review rustdoc: `just doc`
-- [ ] Run clippy: `just lint`
-- [ ] Format code: `just fmt`
 - [ ] Verify no `todo!()` or `unimplemented!()` in committed code
 - [ ] Final commit if fixes needed: "dayNN: final cleanup"
+
+The `just ci` command is equivalent to the full CI pipeline and should be your default quality check.
 
 ### Phase 8: Register Day
 - [ ] Update `src/days/mod.rs` to include new day module
@@ -344,20 +348,28 @@ rust/
 
 ## Useful Commands (via Justfile)
 
+**⚠️ ALWAYS use `just` commands instead of raw `cargo` commands.**
+
 ```bash
-just init          # Initialize environment
-just run           # Run all days
-just run-day N     # Run specific day
-just test          # Run all tests
+# Daily workflow
+just new-day N     # Scaffold new day structure
+just run-day N     # Run specific day's solution
 just test-day N    # Run tests for specific day
+
+# Quality & CI
+just ci            # ⭐ Full CI check (fmt-check, lint, test, build) - USE THIS!
+just fmt           # Format code (use if fmt-check fails in ci)
+just lint          # Run clippy with warnings as errors
+just test          # Run all tests
+
+# Other useful commands
+just run           # Run all implemented days
 just bench         # Run all benchmarks
 just bench-day N   # Run benchmarks for specific day
-just doc           # Generate documentation
-just lint          # Run clippy
-just fmt           # Format code
-just new-day N     # Scaffold new day
-just ci            # Full CI check (fmt, lint, test, build)
+just doc           # Generate and open documentation
 ```
+
+**Most important:** Use `just ci` before committing to ensure code passes all checks.
 
 ## Template Reference
 
