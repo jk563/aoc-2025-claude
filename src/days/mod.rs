@@ -15,13 +15,11 @@ pub mod day01;
 /// Returns a vector of all implemented day solutions.
 /// Days are automatically discovered and registered here.
 pub fn get_days() -> Vec<DayInfo> {
-    vec![
-        DayInfo {
-            number: 1,
-            solver: Box::new(day01::Day01),
-            input: include_str!("day01/input/input.txt"),
-        },
-    ]
+    vec![DayInfo {
+        number: 1,
+        solver: Box::new(day01::Day01),
+        input: include_str!("day01/input/input.txt"),
+    }]
 }
 
 /// Get a specific day by number

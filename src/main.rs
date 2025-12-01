@@ -62,7 +62,7 @@ fn parse_args(args: &[String]) -> Option<usize> {
                     process::exit(1);
                 }
                 match args[i + 1].parse::<usize>() {
-                    Ok(n) if n >= 1 && n <= 25 => {
+                    Ok(n) if (1..=25).contains(&n) => {
                         day_filter = Some(n);
                         i += 2;
                     }

@@ -263,7 +263,7 @@ L82";
     }
 }
 
-#[cfg(all(feature = "bench", test))]
+#[cfg(all(test, not(debug_assertions)))]
 mod benches {
     extern crate test;
     use super::*;
