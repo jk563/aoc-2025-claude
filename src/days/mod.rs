@@ -7,8 +7,8 @@
 
 use crate::runner::DayInfo;
 
-// Example module declaration (uncomment when implementing):
-// pub mod day01;
+// Day modules
+pub mod day01;
 
 /// Get all registered days
 ///
@@ -16,12 +16,11 @@ use crate::runner::DayInfo;
 /// Days are automatically discovered and registered here.
 pub fn get_days() -> Vec<DayInfo> {
     vec![
-        // Register days here as they're implemented:
-        // DayInfo {
-        //     number: 1,
-        //     solver: Box::new(day01::Day01),
-        //     input: include_str!("day01/input/input.txt"),
-        // },
+        DayInfo {
+            number: 1,
+            solver: Box::new(day01::Day01),
+            input: include_str!("day01/input/input.txt"),
+        },
     ]
 }
 
