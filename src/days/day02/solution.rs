@@ -48,8 +48,31 @@ impl Day for Day02String {
     }
 }
 
-/// Default solver for Day 2 (uses math-based implementation)
-pub type Day02 = Day02Math;
+/// Solver for Day 2 using modulo divisor checking
+pub struct Day02Modulo;
+
+impl Day for Day02Modulo {
+    fn part1(&self, input: &str) -> String {
+        let ranges = parse_ranges(input);
+        let sum: u64 = ranges
+            .iter()
+            .flat_map(|(start, end)| (*start..=*end).filter(|&id| is_invalid_id_modulo(id)))
+            .sum();
+        sum.to_string()
+    }
+
+    fn part2(&self, input: &str) -> String {
+        let ranges = parse_ranges(input);
+        let sum: u64 = ranges
+            .iter()
+            .flat_map(|(start, end)| (*start..=*end).filter(|&id| is_invalid_id_v2_modulo(id)))
+            .sum();
+        sum.to_string()
+    }
+}
+
+/// Default solver for Day 2 (uses modulo divisor checking - fastest implementation)
+pub type Day02 = Day02Modulo;
 
 // Helper functions
 
@@ -195,6 +218,60 @@ fn is_invalid_id_v2(id: u64) -> bool {
     false
 }
 
+// Modulo-based helper functions for divisibility checking
+
+/// Compute the divisor for a pattern repeated a certain number of times
+/// For a pattern of length `pattern_len` repeated `repeat_count` times,
+/// the divisor is: sum of 10^(i*pattern_len) for i from 0 to repeat_count-1
+/// Example: pattern_len=2, repeat_count=2 -> 10^0 + 10^2 = 1 + 100 = 101
+#[inline]
+fn compute_divisor(pattern_len: u32, repeat_count: u32) -> u64 {
+    let mut divisor = 0u64;
+    let multiplier = 10u64.pow(pattern_len);
+    let mut power = 1u64;
+
+    for _ in 0..repeat_count {
+        divisor += power;
+        power *= multiplier;
+    }
+
+    divisor
+}
+
+/// Check if an ID is invalid (made of a pattern repeated twice) - Modulo-based implementation
+fn is_invalid_id_modulo(id: u64) -> bool {
+    let digits = count_digits(id);
+
+    // Must have even number of digits
+    if digits % 2 != 0 {
+        return false;
+    }
+
+    // For part 1, check if divisible by 10^(digits/2) + 1
+    let divisor = compute_divisor(digits / 2, 2);
+    id % divisor == 0
+}
+
+/// Check if an ID is invalid (made of a pattern repeated at least twice) - Modulo-based implementation
+fn is_invalid_id_v2_modulo(id: u64) -> bool {
+    let digits = count_digits(id);
+
+    // Try all possible pattern lengths from 1 to digits/2
+    for pattern_len in 1..=(digits / 2) {
+        // Check if digits is divisible by pattern_len
+        if digits % pattern_len == 0 {
+            let repeat_count = digits / pattern_len;
+            let divisor = compute_divisor(pattern_len, repeat_count);
+
+            if id % divisor == 0 {
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -287,6 +364,48 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn test_part1_example_modulo() {
+        assert_eq!(
+            part1_with_validator(EXAMPLE, is_invalid_id_modulo),
+            "1227775554",
+            "Modulo-based implementation failed"
+        );
+    }
+
+    #[test]
+    fn test_part2_example_modulo() {
+        assert_eq!(
+            part2_with_validator(EXAMPLE, is_invalid_id_v2_modulo),
+            "4174379265",
+            "Modulo-based implementation failed"
+        );
+    }
+
+    #[test]
+    fn test_modulo_vs_math_equivalence_part1() {
+        for id in [1212, 123456, 9999, 100100, 10, 1234321, 111111] {
+            assert_eq!(
+                is_invalid_id_modulo(id),
+                is_invalid_id(id),
+                "Mismatch for ID: {}",
+                id
+            );
+        }
+    }
+
+    #[test]
+    fn test_modulo_vs_math_equivalence_part2() {
+        for id in [121212, 111111, 123123, 9999, 1234, 100100100, 12121212] {
+            assert_eq!(
+                is_invalid_id_v2_modulo(id),
+                is_invalid_id_v2(id),
+                "Mismatch for ID: {}",
+                id
+            );
+        }
+    }
 }
 
 #[cfg(all(test, not(debug_assertions)))]
@@ -310,6 +429,12 @@ mod benches {
         b.iter(|| solver.part1(INPUT));
     }
 
+    #[bench]
+    fn bench_part1_modulo(b: &mut Bencher) {
+        let solver = Day02Modulo;
+        b.iter(|| solver.part1(INPUT));
+    }
+
     // Part 2 benchmarks
     #[bench]
     fn bench_part2_math(b: &mut Bencher) {
@@ -320,6 +445,12 @@ mod benches {
     #[bench]
     fn bench_part2_string(b: &mut Bencher) {
         let solver = Day02String;
+        b.iter(|| solver.part2(INPUT));
+    }
+
+    #[bench]
+    fn bench_part2_modulo(b: &mut Bencher) {
+        let solver = Day02Modulo;
         b.iter(|| solver.part2(INPUT));
     }
 
@@ -357,6 +488,24 @@ mod benches {
         b.iter(|| {
             for id in 1000..2000 {
                 test::black_box(is_invalid_id_v2_string(id));
+            }
+        });
+    }
+
+    #[bench]
+    fn bench_is_invalid_id_modulo(b: &mut Bencher) {
+        b.iter(|| {
+            for id in 1000..2000 {
+                test::black_box(is_invalid_id_modulo(id));
+            }
+        });
+    }
+
+    #[bench]
+    fn bench_is_invalid_id_v2_modulo(b: &mut Bencher) {
+        b.iter(|| {
+            for id in 1000..2000 {
+                test::black_box(is_invalid_id_v2_modulo(id));
             }
         });
     }
