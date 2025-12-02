@@ -20,6 +20,14 @@ run:
 run-day day:
     cargo run --release -- --day {{day}}
 
+# Run all implementations for all days
+run-all-impls:
+    cargo run --release -- --all-impls
+
+# Run all implementations for specific day
+run-all-impls-day day:
+    cargo run --release -- --day {{day}} --all-impls
+
 # Run tests
 test:
     cargo test
