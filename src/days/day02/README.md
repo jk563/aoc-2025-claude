@@ -1,93 +1,62 @@
-# Day 2: [Puzzle Title]
+# Day 2: Gift Shop
 
 ## Problem Statement
 
-[Provide a concise 2-3 sentence summary of the puzzle. Focus on what needs to be solved, not implementation details.]
+Identify and sum invalid product IDs in given ranges. An invalid ID is one where the digits form a repeating pattern. Part 1 requires exactly 2 repetitions, while Part 2 allows 2 or more repetitions.
 
 ### Example Input
 ```
-[Paste example input from puzzle description]
+11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124
 ```
 
 ### Example Output
-- Part 1: `[expected output]`
-- Part 2: `[expected output]`
+- Part 1: `1227775554`
+- Part 2: `4174379265`
 
 ## Algorithm & Approach
 
 ### Part 1
 
-[Explain the approach used to solve Part 1. Include:]
-- What data structures were chosen and why
-- The high-level algorithm or strategy
-- Any key insights that make the solution work
-- Trade-offs considered
+Check if a number's digits can be split into two equal halves. Convert the number to a string, verify it has an even number of digits, then compare the first and second halves for equality.
 
 **Complexity:**
-- Time: O(?)
-- Space: O(?)
+- Time: O(n × d) where n is the total count of IDs in all ranges and d is the average number of digits
+- Space: O(d) for the string representation
 
-[Justify these complexities briefly]
+For each ID, we convert to string (O(d)) and compare halves (O(d)).
 
 ### Part 2
 
-[Explain how Part 2 differs from Part 1. Include:]
-- What changed in the problem
-- Whether the Part 1 solution could be reused or adapted
-- What new challenges emerged
-- The final approach
+Extend the pattern matching to detect any repeating subsequence. Try all possible pattern lengths from 1 to len/2, checking if repeating each pattern produces the original number. This captures patterns repeated 2, 3, 4, or more times.
 
 **Complexity:**
-- Time: O(?)
-- Space: O(?)
+- Time: O(n × d²) where n is the total count of IDs and d is the average number of digits
+- Space: O(d) for string operations
+
+For each ID, we try up to d/2 pattern lengths, and for each we do O(d) string operations.
 
 ## Implementation Notes
 
-[Highlight interesting aspects of the implementation:]
-- Notable Rust patterns or idioms used
-- Performance optimizations applied
-- Edge cases handled
-- Challenges encountered and how they were solved
-- Interesting language features leveraged
+**String-based pattern matching**: Converting numbers to strings simplifies pattern detection. While this adds overhead compared to pure arithmetic, it makes the logic clearer and handles arbitrary-length patterns elegantly.
 
-[Keep this section focused on educational value - what would help someone learn from this code?]
+**Efficient iteration**: Using `flat_map` with `filter` allows processing all ranges in a functional pipeline, summing only invalid IDs in a single pass.
 
-## Benchmark Results
+**Pattern reuse**: Part 2 naturally extends Part 1 - a pattern repeated exactly twice is just a special case of a pattern repeated at least twice. However, Part 1's optimized half-split check is kept for reference.
 
-[Include this section only if multiple approaches were tested]
-
-| Approach | Part 1 Time | Part 2 Time | Notes |
-|----------|-------------|-------------|-------|
-| Approach A | X ms | Y ms | [Brief description] |
-| Approach B | X ms | Y ms | [Brief description] |
-
-**Winner:** [Which approach and why]
-
-[Provide context about the benchmarks:]
-- Input characteristics that influenced performance
-- Why one approach outperformed others
-- When you might choose the slower approach (if ever)
+**Edge cases handled**:
+- Numbers with odd digit counts (can't have even split for Part 1)
+- Single-digit patterns (1111 = "1" × 4)
+- Large numbers (using u64 for IDs up to ~10^19)
 
 ## Alternative Approaches Considered
 
-[Briefly discuss other approaches considered but not implemented, or implemented and benchmarked out:]
+1. **Arithmetic pattern detection**: Instead of strings, could use modulo and division to extract pattern. More efficient but significantly more complex for variable-length patterns.
 
-1. **[Approach name]**: [Why it wasn't chosen or why it lost the benchmark]
-2. **[Approach name]**: [Trade-offs that made it less suitable]
-
-[This section helps readers understand the decision-making process and learn about algorithm trade-offs]
-
-## Visualizations
-
-[Optional: Include mermaid diagrams for complex algorithms or state machines]
-
-```mermaid
-[diagram if helpful]
-```
+2. **Precompute invalid IDs**: Could generate all possible invalid IDs up to a limit. Would be faster for multiple queries but impractical given the large range (up to 10^10+).
 
 ---
 
 **Key Takeaways:**
-- [One-sentence summary of main algorithmic insight]
-- [One-sentence summary of main Rust pattern or technique used]
-- [Any other notable learning points]
+- String manipulation can simplify pattern-matching problems even with numeric input
+- Functional iteration with `flat_map` and `filter` creates clean, composable pipelines
+- Part 2's general solution (any repetition count) subsumes Part 1's specific case (exactly 2 repetitions)

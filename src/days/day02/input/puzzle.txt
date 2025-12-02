@@ -1,1 +1,9 @@
-TODO: Paste the puzzle description from https://adventofcode.com/2025/day/2
+--- Day 2: Gift Shop ---
+
+You get inside and take the elevator to its only other stop: the gift shop. One of the clerks asks for your help identifying invalid product IDs that a young Elf accidentally added to the database.
+
+Part 1: An ID is invalid if it's made only of some sequence of digits repeated exactly twice (e.g., 55, 6464, 123123).
+
+Part 2: An ID is invalid if it's made only of some sequence of digits repeated at least twice (e.g., 12341234, 123123123, 1212121212, 1111111).
+
+Given ranges of product IDs, find and sum all invalid IDs in those ranges.

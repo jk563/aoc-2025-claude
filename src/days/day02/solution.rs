@@ -51,7 +51,7 @@ fn is_invalid_id(id: u64) -> bool {
     let len = s.len();
 
     // Must have even number of digits to be splittable
-    if len % 2 != 0 {
+    if !len.is_multiple_of(2) {
         return false;
     }
 
@@ -71,7 +71,7 @@ fn is_invalid_id_v2(id: u64) -> bool {
     // Try all possible pattern lengths from 1 to len/2
     for pattern_len in 1..=(len / 2) {
         // Check if the string length is divisible by pattern length
-        if len % pattern_len == 0 {
+        if len.is_multiple_of(pattern_len) {
             let pattern = &s[..pattern_len];
             let repetitions = len / pattern_len;
 
@@ -101,26 +101,5 @@ mod tests {
     fn test_part2_example() {
         let day = Day02;
         assert_eq!(day.part2(EXAMPLE), "4174379265");
-    }
-}
-
-#[cfg(all(feature = "bench", test))]
-mod benches {
-    extern crate test;
-    use super::*;
-    use test::Bencher;
-
-    #[bench]
-    fn bench_part1(b: &mut Bencher) {
-        let input = include_str!("input/input.txt");
-        let day = Day02;
-        b.iter(|| day.part1(input));
-    }
-
-    #[bench]
-    fn bench_part2(b: &mut Bencher) {
-        let input = include_str!("input/input.txt");
-        let day = Day02;
-        b.iter(|| day.part2(input));
     }
 }
