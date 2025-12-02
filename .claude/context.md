@@ -17,11 +17,15 @@ When starting a new session to implement a day's puzzle:
 1. **Read this context file first** to understand project guidelines
 2. **Read README.md** for project structure overview
 3. **Determine which day to implement**: Check user input or find the next unimplemented day
-4. **Verify input files exist**: Check that `src/days/dayNN/input/puzzle.txt` and `input.txt` exist
+4. **Create a todo list immediately** using the TodoWrite tool with all 8 phases from the Daily Implementation Checklist
+   - This ensures you don't skip critical steps (especially documentation and quality checks)
+   - Update the todo list as you progress through each phase
+   - Mark tasks complete as you finish them
+5. **Verify input files exist**: Check that `src/days/dayNN/input/puzzle.txt` and `input.txt` exist
    - If missing, STOP and ask the user to provide them
    - DO NOT proceed without input files
-5. **Review recent implementations**: Read 1-2 recent day solutions to understand patterns
-6. **Check for common utilities**: Review `src/common/mod.rs` for existing helpers
+6. **Review recent implementations**: Read 1-2 recent day solutions to understand patterns
+7. **Check for common utilities**: Review `src/common/mod.rs` for existing helpers
 
 Your context window will be automatically compacted as it approaches its limit, allowing you to continue working indefinitely from where you left off.
 
@@ -102,11 +106,44 @@ Why this matters: Clear git history makes it easy to review changes, understand 
 and revert if needed. It's also educational for others reading the repository.
 </git_workflow>
 
+## Task Tracking with TodoWrite Tool
+
+⚠️ **MANDATORY: Use the TodoWrite tool to track workflow progress** ⚠️
+
+The TodoWrite tool is not optional - it's a required part of the workflow. Using it ensures you:
+- Don't forget critical steps (documentation, quality checks, commits)
+- Give the user visibility into your progress
+- Follow the complete 8-phase workflow systematically
+
+**When to create the todo list:**
+- **Immediately** after starting work on a new day
+- Create todos for ALL 8 phases from the Daily Implementation Checklist below
+
+**How to use it:**
+- Mark exactly ONE task as `in_progress` at a time (the one you're currently working on)
+- Mark tasks as `completed` IMMEDIATELY when finished (don't batch completions)
+- Update descriptions as you learn more about the task
+- Add new tasks if you discover additional work needed
+
+**Example workflow:**
+```
+1. User: "Let's do day 3"
+2. You: Use TodoWrite to create todos for all 8 phases
+3. You: Mark Phase 1 setup as in_progress
+4. You: Complete setup, mark Phase 1 as completed
+5. You: Mark Phase 2 (Part 1) as in_progress
+... and so on through all 8 phases
+```
+
+If you don't use TodoWrite, you WILL forget steps. Past sessions have shown this pattern.
+
 ## Daily Implementation Checklist
 
 ⚠️ **CRITICAL: ALL 8 PHASES ARE REQUIRED** ⚠️
 
 Do not stop after Phase 3 just because the code works. Documentation (Phase 6) and Quality Checks (Phase 7) are mandatory, not optional. A day is not complete until all phases are done.
+
+**BEFORE STARTING: Create a todo list with TodoWrite containing all 8 phases below.**
 
 When implementing a day's puzzle, follow this sequence:
 
