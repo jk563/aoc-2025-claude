@@ -59,6 +59,13 @@ pub fn get_all_implementations() -> Vec<DayInfo> {
             solver: Box::new(day02::Day02String),
             input: include_str!("day02/input/input.txt"),
         },
+        // Day 2 - modulo-based implementation (fastest)
+        DayInfo {
+            number: 2,
+            impl_name: Some("modulo".to_string()),
+            solver: Box::new(day02::Day02Modulo),
+            input: include_str!("day02/input/input.txt"),
+        },
     ]
 }
 
