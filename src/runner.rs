@@ -15,6 +15,7 @@ pub trait Day: Send + Sync {
 #[derive(Debug, Clone)]
 pub struct DayResult {
     pub day_number: usize,
+    pub impl_name: Option<String>,
     pub part1_result: String,
     pub part2_result: String,
     pub part1_time: Duration,
@@ -31,6 +32,7 @@ impl DayResult {
 /// Metadata for a day's solution
 pub struct DayInfo {
     pub number: usize,
+    pub impl_name: Option<String>,
     pub solver: Box<dyn Day>,
     pub input: &'static str,
 }
@@ -47,6 +49,7 @@ pub fn run_day(info: &DayInfo) -> DayResult {
 
     DayResult {
         day_number: info.number,
+        impl_name: info.impl_name.clone(),
         part1_result,
         part2_result,
         part1_time,
@@ -92,12 +95,14 @@ mod tests {
     fn test_run_day() {
         let info = DayInfo {
             number: 1,
+            impl_name: None,
             solver: Box::new(TestDay),
             input: "test123",
         };
 
         let result = run_day(&info);
         assert_eq!(result.day_number, 1);
+        assert_eq!(result.impl_name, None);
         assert_eq!(result.part1_result, "7");
         assert_eq!(result.part2_result, "3");
     }

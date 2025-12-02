@@ -15,10 +15,14 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     // Parse command line arguments
-    let day_filter = parse_args(&args);
+    let (day_filter, all_impls) = parse_args(&args);
 
     // Get days to run
-    let all_days = days::get_days();
+    let all_days = if all_impls {
+        days::get_all_implementations()
+    } else {
+        days::get_days()
+    };
     let days_to_run: Vec<_> = match day_filter {
         Some(n) => all_days.into_iter().filter(|d| d.number == n).collect(),
         None => all_days,
@@ -43,10 +47,12 @@ fn main() {
 /// Parse command line arguments
 ///
 /// Returns:
-/// - `None` to run all days
-/// - `Some(n)` to run day n
-fn parse_args(args: &[String]) -> Option<usize> {
+/// - A tuple of (day_filter, all_impls)
+/// - day_filter: `None` to run all days, `Some(n)` to run day n
+/// - all_impls: `true` to run all implementations, `false` for default only
+fn parse_args(args: &[String]) -> (Option<usize>, bool) {
     let mut day_filter = None;
+    let mut all_impls = false;
     let mut i = 1; // Skip program name
 
     while i < args.len() {
@@ -76,6 +82,10 @@ fn parse_args(args: &[String]) -> Option<usize> {
                     }
                 }
             }
+            "--all-impls" | "-a" => {
+                all_impls = true;
+                i += 1;
+            }
             arg => {
                 eprintln!("Error: Unknown argument: {}", arg);
                 print_usage();
@@ -84,7 +94,7 @@ fn parse_args(args: &[String]) -> Option<usize> {
         }
     }
 
-    day_filter
+    (day_filter, all_impls)
 }
 
 fn print_usage() {
@@ -99,13 +109,16 @@ fn print_help() {
     println!("    aoc2025 [OPTIONS]");
     println!();
     println!("OPTIONS:");
-    println!("    -d, --day <N>    Run only day N (1-25)");
-    println!("    -h, --help       Print help information");
+    println!("    -d, --day <N>     Run only day N (1-25)");
+    println!("    -a, --all-impls   Run all implementations for each day");
+    println!("    -h, --help        Print help information");
     println!();
     println!("EXAMPLES:");
-    println!("    aoc2025          Run all implemented days");
-    println!("    aoc2025 --day 1  Run only day 1");
-    println!("    aoc2025 -d 5     Run only day 5");
+    println!("    aoc2025               Run all implemented days");
+    println!("    aoc2025 --day 1       Run only day 1");
+    println!("    aoc2025 -d 5          Run only day 5");
+    println!("    aoc2025 --all-impls   Run all implementations (e.g., math and string)");
+    println!("    aoc2025 -d 2 -a       Run all implementations for day 2");
 }
 
 #[cfg(test)]
@@ -115,15 +128,35 @@ mod tests {
     #[test]
     fn test_parse_args_no_filter() {
         let args = vec!["aoc2025".to_string()];
-        assert_eq!(parse_args(&args), None);
+        assert_eq!(parse_args(&args), (None, false));
     }
 
     #[test]
     fn test_parse_args_with_day() {
         let args = vec!["aoc2025".to_string(), "--day".to_string(), "5".to_string()];
-        assert_eq!(parse_args(&args), Some(5));
+        assert_eq!(parse_args(&args), (Some(5), false));
 
         let args = vec!["aoc2025".to_string(), "-d".to_string(), "1".to_string()];
-        assert_eq!(parse_args(&args), Some(1));
+        assert_eq!(parse_args(&args), (Some(1), false));
+    }
+
+    #[test]
+    fn test_parse_args_with_all_impls() {
+        let args = vec!["aoc2025".to_string(), "--all-impls".to_string()];
+        assert_eq!(parse_args(&args), (None, true));
+
+        let args = vec!["aoc2025".to_string(), "-a".to_string()];
+        assert_eq!(parse_args(&args), (None, true));
+    }
+
+    #[test]
+    fn test_parse_args_with_day_and_all_impls() {
+        let args = vec![
+            "aoc2025".to_string(),
+            "--day".to_string(),
+            "2".to_string(),
+            "--all-impls".to_string(),
+        ];
+        assert_eq!(parse_args(&args), (Some(2), true));
     }
 }

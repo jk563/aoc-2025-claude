@@ -12,4 +12,4 @@
 
 mod solution;
 
-pub use solution::Day02;
+pub use solution::{Day02, Day02Math, Day02String};

@@ -19,12 +19,44 @@ pub fn get_days() -> Vec<DayInfo> {
     vec![
         DayInfo {
             number: 1,
+            impl_name: None,
             solver: Box::new(day01::Day01),
             input: include_str!("day01/input/input.txt"),
         },
         DayInfo {
             number: 2,
-            solver: Box::new(day02::Day02),
+            impl_name: None,
+            solver: Box::new(day02::Day02Math),
+            input: include_str!("day02/input/input.txt"),
+        },
+    ]
+}
+
+/// Get all implementations for all days
+///
+/// Returns a vector including all available implementations for each day.
+/// This is used when the --all-impls flag is provided.
+pub fn get_all_implementations() -> Vec<DayInfo> {
+    vec![
+        // Day 1 - single implementation
+        DayInfo {
+            number: 1,
+            impl_name: None,
+            solver: Box::new(day01::Day01),
+            input: include_str!("day01/input/input.txt"),
+        },
+        // Day 2 - math-based implementation
+        DayInfo {
+            number: 2,
+            impl_name: Some("math".to_string()),
+            solver: Box::new(day02::Day02Math),
+            input: include_str!("day02/input/input.txt"),
+        },
+        // Day 2 - string-based implementation
+        DayInfo {
+            number: 2,
+            impl_name: Some("string".to_string()),
+            solver: Box::new(day02::Day02String),
             input: include_str!("day02/input/input.txt"),
         },
     ]

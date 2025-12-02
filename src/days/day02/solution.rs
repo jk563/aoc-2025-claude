@@ -2,10 +2,10 @@
 
 use crate::runner::Day;
 
-/// Solver for Day 2
-pub struct Day02;
+/// Solver for Day 2 using math-based validation
+pub struct Day02Math;
 
-impl Day for Day02 {
+impl Day for Day02Math {
     fn part1(&self, input: &str) -> String {
         let ranges = parse_ranges(input);
         let sum: u64 = ranges
@@ -24,6 +24,32 @@ impl Day for Day02 {
         sum.to_string()
     }
 }
+
+/// Solver for Day 2 using string-based validation
+pub struct Day02String;
+
+impl Day for Day02String {
+    fn part1(&self, input: &str) -> String {
+        let ranges = parse_ranges(input);
+        let sum: u64 = ranges
+            .iter()
+            .flat_map(|(start, end)| (*start..=*end).filter(|&id| is_invalid_id_string(id)))
+            .sum();
+        sum.to_string()
+    }
+
+    fn part2(&self, input: &str) -> String {
+        let ranges = parse_ranges(input);
+        let sum: u64 = ranges
+            .iter()
+            .flat_map(|(start, end)| (*start..=*end).filter(|&id| is_invalid_id_v2_string(id)))
+            .sum();
+        sum.to_string()
+    }
+}
+
+/// Default solver for Day 2 (uses math-based implementation)
+pub type Day02 = Day02Math;
 
 // Helper functions
 
@@ -260,5 +286,78 @@ mod tests {
                 id
             );
         }
+    }
+}
+
+#[cfg(all(test, not(debug_assertions)))]
+mod benches {
+    extern crate test;
+    use super::*;
+    use test::Bencher;
+
+    const INPUT: &str = include_str!("input/input.txt");
+
+    // Part 1 benchmarks
+    #[bench]
+    fn bench_part1_math(b: &mut Bencher) {
+        let solver = Day02Math;
+        b.iter(|| solver.part1(INPUT));
+    }
+
+    #[bench]
+    fn bench_part1_string(b: &mut Bencher) {
+        let solver = Day02String;
+        b.iter(|| solver.part1(INPUT));
+    }
+
+    // Part 2 benchmarks
+    #[bench]
+    fn bench_part2_math(b: &mut Bencher) {
+        let solver = Day02Math;
+        b.iter(|| solver.part2(INPUT));
+    }
+
+    #[bench]
+    fn bench_part2_string(b: &mut Bencher) {
+        let solver = Day02String;
+        b.iter(|| solver.part2(INPUT));
+    }
+
+    // Individual validation function benchmarks for part 1
+    #[bench]
+    fn bench_is_invalid_id_math(b: &mut Bencher) {
+        b.iter(|| {
+            for id in 1000..2000 {
+                test::black_box(is_invalid_id(id));
+            }
+        });
+    }
+
+    #[bench]
+    fn bench_is_invalid_id_string(b: &mut Bencher) {
+        b.iter(|| {
+            for id in 1000..2000 {
+                test::black_box(is_invalid_id_string(id));
+            }
+        });
+    }
+
+    // Individual validation function benchmarks for part 2
+    #[bench]
+    fn bench_is_invalid_id_v2_math(b: &mut Bencher) {
+        b.iter(|| {
+            for id in 1000..2000 {
+                test::black_box(is_invalid_id_v2(id));
+            }
+        });
+    }
+
+    #[bench]
+    fn bench_is_invalid_id_v2_string(b: &mut Bencher) {
+        b.iter(|| {
+            for id in 1000..2000 {
+                test::black_box(is_invalid_id_v2_string(id));
+            }
+        });
     }
 }

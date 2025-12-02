@@ -23,7 +23,19 @@ pub fn format_results(results: &[DayResult]) -> String {
     let mut output = String::new();
 
     // Calculate column widths
-    let day_width = 6; // "Day 01" is 6 characters
+    let day_width = results
+        .iter()
+        .map(|r| {
+            let base = format!("Day {:02}", r.day_number).len();
+            if let Some(name) = &r.impl_name {
+                base + name.len() + 3 // +3 for " ()"
+            } else {
+                base
+            }
+        })
+        .max()
+        .unwrap_or(6)
+        .max(6); // "Day" header minimum
     let part1_width = results
         .iter()
         .map(|r| r.part1_result.len())
@@ -79,9 +91,15 @@ pub fn format_results(results: &[DayResult]) -> String {
 
     // Data rows
     for result in results {
+        let day_label = if let Some(name) = &result.impl_name {
+            format!("Day {:02} ({})", result.day_number, name)
+        } else {
+            format!("Day {:02}", result.day_number)
+        };
+
         output.push_str(&format!(
             "│ {:>width$} │ {:>part1$} │ {:>part2$} │ {:>time$} │ {:>time$} │ {:>total$} │\n",
-            format!("Day {:02}", result.day_number),
+            day_label,
             result.part1_result,
             result.part2_result,
             format_duration(result.part1_time),
@@ -143,6 +161,7 @@ mod tests {
     fn test_format_single_result() {
         let results = vec![DayResult {
             day_number: 1,
+            impl_name: None,
             part1_result: "42".to_string(),
             part2_result: "100".to_string(),
             part1_time: Duration::from_micros(500),
@@ -162,6 +181,7 @@ mod tests {
         let results = vec![
             DayResult {
                 day_number: 1,
+                impl_name: None,
                 part1_result: "42".to_string(),
                 part2_result: "100".to_string(),
                 part1_time: Duration::from_micros(500),
@@ -169,6 +189,7 @@ mod tests {
             },
             DayResult {
                 day_number: 2,
+                impl_name: None,
                 part1_result: "1234".to_string(),
                 part2_result: "5678".to_string(),
                 part1_time: Duration::from_millis(5),
@@ -179,6 +200,33 @@ mod tests {
         let output = format_results(&results);
         assert!(output.contains("Day 01"));
         assert!(output.contains("Day 02"));
+        assert!(output.contains("Total"));
+    }
+
+    #[test]
+    fn test_format_with_impl_names() {
+        let results = vec![
+            DayResult {
+                day_number: 2,
+                impl_name: Some("math".to_string()),
+                part1_result: "1234".to_string(),
+                part2_result: "5678".to_string(),
+                part1_time: Duration::from_millis(5),
+                part2_time: Duration::from_millis(10),
+            },
+            DayResult {
+                day_number: 2,
+                impl_name: Some("string".to_string()),
+                part1_result: "1234".to_string(),
+                part2_result: "5678".to_string(),
+                part1_time: Duration::from_millis(8),
+                part2_time: Duration::from_millis(15),
+            },
+        ];
+
+        let output = format_results(&results);
+        assert!(output.contains("Day 02 (math)"));
+        assert!(output.contains("Day 02 (string)"));
         assert!(output.contains("Total"));
     }
 }
