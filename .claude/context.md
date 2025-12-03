@@ -16,7 +16,7 @@ When starting a new session to implement a day's puzzle:
 
 1. **Read this context file first** to understand project guidelines
 2. **Read README.md** for project structure overview
-3. **Determine which day to implement**: Check user input or find the next unimplemented day
+3. **Determine which day to implement**: Check user input or find the next unimplemented day. Think very hard about how to complete it.
 4. **Create a todo list immediately** using the TodoWrite tool with all 8 phases from the Daily Implementation Checklist
    - This ensures you don't skip critical steps (especially documentation and quality checks)
    - Update the todo list as you progress through each phase
