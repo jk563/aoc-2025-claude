@@ -108,7 +108,7 @@ TODO: Add example input from puzzle";
     }
 }
 
-#[cfg(all(feature = "bench", test))]
+#[cfg(test)]
 mod benches {
     extern crate test;
     use super::*;
