@@ -2,15 +2,42 @@
 
 use crate::runner::Day;
 
-/// Solver for Day 2 using math-based validation
-pub struct Day02Math;
+/// Generic solver for Day 2 that accepts different validation functions
+///
+/// This allows us to easily swap out different validation implementations
+/// (math-based, string-based, modulo-based) without duplicating the Day trait implementation.
+pub struct ValidatingSolver<P1, P2>
+where
+    P1: Fn(u64) -> bool,
+    P2: Fn(u64) -> bool,
+{
+    part1_validator: P1,
+    part2_validator: P2,
+}
 
-impl Day for Day02Math {
+impl<P1, P2> ValidatingSolver<P1, P2>
+where
+    P1: Fn(u64) -> bool,
+    P2: Fn(u64) -> bool,
+{
+    pub const fn new(part1_validator: P1, part2_validator: P2) -> Self {
+        Self {
+            part1_validator,
+            part2_validator,
+        }
+    }
+}
+
+impl<P1, P2> Day for ValidatingSolver<P1, P2>
+where
+    P1: Fn(u64) -> bool + Send + Sync,
+    P2: Fn(u64) -> bool + Send + Sync,
+{
     fn part1(&self, input: &str) -> String {
         let ranges = parse_ranges(input);
         let sum: u64 = ranges
             .iter()
-            .flat_map(|(start, end)| (*start..=*end).filter(|&id| is_invalid_id(id)))
+            .flat_map(|(start, end)| (*start..=*end).filter(|&id| (self.part1_validator)(id)))
             .sum();
         sum.to_string()
     }
@@ -19,60 +46,11 @@ impl Day for Day02Math {
         let ranges = parse_ranges(input);
         let sum: u64 = ranges
             .iter()
-            .flat_map(|(start, end)| (*start..=*end).filter(|&id| is_invalid_id_v2(id)))
+            .flat_map(|(start, end)| (*start..=*end).filter(|&id| (self.part2_validator)(id)))
             .sum();
         sum.to_string()
     }
 }
-
-/// Solver for Day 2 using string-based validation
-pub struct Day02String;
-
-impl Day for Day02String {
-    fn part1(&self, input: &str) -> String {
-        let ranges = parse_ranges(input);
-        let sum: u64 = ranges
-            .iter()
-            .flat_map(|(start, end)| (*start..=*end).filter(|&id| is_invalid_id_string(id)))
-            .sum();
-        sum.to_string()
-    }
-
-    fn part2(&self, input: &str) -> String {
-        let ranges = parse_ranges(input);
-        let sum: u64 = ranges
-            .iter()
-            .flat_map(|(start, end)| (*start..=*end).filter(|&id| is_invalid_id_v2_string(id)))
-            .sum();
-        sum.to_string()
-    }
-}
-
-/// Solver for Day 2 using modulo divisor checking
-pub struct Day02Modulo;
-
-impl Day for Day02Modulo {
-    fn part1(&self, input: &str) -> String {
-        let ranges = parse_ranges(input);
-        let sum: u64 = ranges
-            .iter()
-            .flat_map(|(start, end)| (*start..=*end).filter(|&id| is_invalid_id_modulo(id)))
-            .sum();
-        sum.to_string()
-    }
-
-    fn part2(&self, input: &str) -> String {
-        let ranges = parse_ranges(input);
-        let sum: u64 = ranges
-            .iter()
-            .flat_map(|(start, end)| (*start..=*end).filter(|&id| is_invalid_id_v2_modulo(id)))
-            .sum();
-        sum.to_string()
-    }
-}
-
-/// Default solver for Day 2 (uses modulo divisor checking - fastest implementation)
-pub type Day02 = Day02Modulo;
 
 // Helper functions
 
@@ -272,27 +250,35 @@ fn is_invalid_id_v2_modulo(id: u64) -> bool {
     false
 }
 
+// Solver instances
+
+/// Solver for Day 2 using math-based validation
+#[allow(non_upper_case_globals)]
+pub const Day02Math: ValidatingSolver<fn(u64) -> bool, fn(u64) -> bool> =
+    ValidatingSolver::new(is_invalid_id, is_invalid_id_v2);
+
+/// Solver for Day 2 using string-based validation
+#[allow(non_upper_case_globals)]
+pub const Day02String: ValidatingSolver<fn(u64) -> bool, fn(u64) -> bool> =
+    ValidatingSolver::new(is_invalid_id_string, is_invalid_id_v2_string);
+
+/// Solver for Day 2 using modulo divisor checking (fastest implementation)
+#[allow(non_upper_case_globals)]
+pub const Day02Modulo: ValidatingSolver<fn(u64) -> bool, fn(u64) -> bool> =
+    ValidatingSolver::new(is_invalid_id_modulo, is_invalid_id_v2_modulo);
+
+/// Default solver for Day 2 (uses modulo divisor checking)
+#[allow(non_upper_case_globals)]
+pub const Day02: ValidatingSolver<fn(u64) -> bool, fn(u64) -> bool> = Day02Modulo;
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     const EXAMPLE: &str = "11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124";
 
-    /// Helper to run part1 with a specific validation function
-    fn part1_with_validator<F>(input: &str, validator: F) -> String
-    where
-        F: Fn(u64) -> bool,
-    {
-        let ranges = parse_ranges(input);
-        let sum: u64 = ranges
-            .iter()
-            .flat_map(|(start, end)| (*start..=*end).filter(|&id| validator(id)))
-            .sum();
-        sum.to_string()
-    }
-
-    /// Helper to run part2 with a specific validation function
-    fn part2_with_validator<F>(input: &str, validator: F) -> String
+    /// Helper to validate ranges with a specific validation function
+    fn validate_ranges<F>(input: &str, validator: F) -> String
     where
         F: Fn(u64) -> bool,
     {
@@ -307,7 +293,7 @@ mod tests {
     #[test]
     fn test_part1_example_math() {
         assert_eq!(
-            part1_with_validator(EXAMPLE, is_invalid_id),
+            validate_ranges(EXAMPLE, is_invalid_id),
             "1227775554",
             "Math-based implementation failed"
         );
@@ -316,7 +302,7 @@ mod tests {
     #[test]
     fn test_part1_example_string() {
         assert_eq!(
-            part1_with_validator(EXAMPLE, is_invalid_id_string),
+            validate_ranges(EXAMPLE, is_invalid_id_string),
             "1227775554",
             "String-based implementation failed"
         );
@@ -325,7 +311,7 @@ mod tests {
     #[test]
     fn test_part2_example_math() {
         assert_eq!(
-            part2_with_validator(EXAMPLE, is_invalid_id_v2),
+            validate_ranges(EXAMPLE, is_invalid_id_v2),
             "4174379265",
             "Math-based implementation failed"
         );
@@ -334,7 +320,7 @@ mod tests {
     #[test]
     fn test_part2_example_string() {
         assert_eq!(
-            part2_with_validator(EXAMPLE, is_invalid_id_v2_string),
+            validate_ranges(EXAMPLE, is_invalid_id_v2_string),
             "4174379265",
             "String-based implementation failed"
         );
@@ -368,7 +354,7 @@ mod tests {
     #[test]
     fn test_part1_example_modulo() {
         assert_eq!(
-            part1_with_validator(EXAMPLE, is_invalid_id_modulo),
+            validate_ranges(EXAMPLE, is_invalid_id_modulo),
             "1227775554",
             "Modulo-based implementation failed"
         );
@@ -377,7 +363,7 @@ mod tests {
     #[test]
     fn test_part2_example_modulo() {
         assert_eq!(
-            part2_with_validator(EXAMPLE, is_invalid_id_v2_modulo),
+            validate_ranges(EXAMPLE, is_invalid_id_v2_modulo),
             "4174379265",
             "Modulo-based implementation failed"
         );

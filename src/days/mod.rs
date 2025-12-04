@@ -7,6 +7,39 @@
 
 use crate::runner::DayInfo;
 
+/// Macro to register a day solution with optional implementation name.
+///
+/// # Examples
+///
+/// ```ignore
+/// // Register a single implementation (default)
+/// register_day!(1, day01::Day01, "day01/input/input.txt")
+///
+/// // Register a named implementation variant
+/// register_day!(2, "math", day02::Day02Math, "day02/input/input.txt")
+/// ```
+#[macro_export]
+macro_rules! register_day {
+    // Default implementation (no name)
+    ($number:expr, $solver:expr, $input_file:expr) => {
+        DayInfo {
+            number: $number,
+            impl_name: None,
+            solver: Box::new($solver),
+            input: include_str!($input_file),
+        }
+    };
+    // Named implementation variant
+    ($number:expr, $impl_name:expr, $solver:expr, $input_file:expr) => {
+        DayInfo {
+            number: $number,
+            impl_name: Some($impl_name.to_string()),
+            solver: Box::new($solver),
+            input: include_str!($input_file),
+        }
+    };
+}
+
 // Day modules
 pub mod day01;
 pub mod day02;
@@ -19,30 +52,10 @@ pub mod day04;
 /// Days are automatically discovered and registered here.
 pub fn get_days() -> Vec<DayInfo> {
     vec![
-        DayInfo {
-            number: 1,
-            impl_name: None,
-            solver: Box::new(day01::Day01),
-            input: include_str!("day01/input/input.txt"),
-        },
-        DayInfo {
-            number: 2,
-            impl_name: None,
-            solver: Box::new(day02::Day02Math),
-            input: include_str!("day02/input/input.txt"),
-        },
-        DayInfo {
-            number: 3,
-            impl_name: None,
-            solver: Box::new(day03::Day03),
-            input: include_str!("day03/input/input.txt"),
-        },
-        DayInfo {
-            number: 4,
-            impl_name: None,
-            solver: Box::new(day04::Day04Optimized),
-            input: include_str!("day04/input/input.txt"),
-        },
+        register_day!(1, day01::Day01, "day01/input/input.txt"),
+        register_day!(2, day02::Day02Math, "day02/input/input.txt"),
+        register_day!(3, day03::Day03, "day03/input/input.txt"),
+        register_day!(4, day04::Day04Optimized, "day04/input/input.txt"),
     ]
 }
 
@@ -53,54 +66,19 @@ pub fn get_days() -> Vec<DayInfo> {
 pub fn get_all_implementations() -> Vec<DayInfo> {
     vec![
         // Day 1 - single implementation
-        DayInfo {
-            number: 1,
-            impl_name: None,
-            solver: Box::new(day01::Day01),
-            input: include_str!("day01/input/input.txt"),
-        },
+        register_day!(1, day01::Day01, "day01/input/input.txt"),
         // Day 2 - math-based implementation
-        DayInfo {
-            number: 2,
-            impl_name: Some("math".to_string()),
-            solver: Box::new(day02::Day02Math),
-            input: include_str!("day02/input/input.txt"),
-        },
+        register_day!(2, "math", day02::Day02Math, "day02/input/input.txt"),
         // Day 2 - string-based implementation
-        DayInfo {
-            number: 2,
-            impl_name: Some("string".to_string()),
-            solver: Box::new(day02::Day02String),
-            input: include_str!("day02/input/input.txt"),
-        },
+        register_day!(2, "string", day02::Day02String, "day02/input/input.txt"),
         // Day 2 - modulo-based implementation (fastest)
-        DayInfo {
-            number: 2,
-            impl_name: Some("modulo".to_string()),
-            solver: Box::new(day02::Day02Modulo),
-            input: include_str!("day02/input/input.txt"),
-        },
+        register_day!(2, "modulo", day02::Day02Modulo, "day02/input/input.txt"),
         // Day 3 - single implementation
-        DayInfo {
-            number: 3,
-            impl_name: None,
-            solver: Box::new(day03::Day03),
-            input: include_str!("day03/input/input.txt"),
-        },
+        register_day!(3, day03::Day03, "day03/input/input.txt"),
         // Day 4 - optimized implementation (default)
-        DayInfo {
-            number: 4,
-            impl_name: Some("optimized".to_string()),
-            solver: Box::new(day04::Day04Optimized),
-            input: include_str!("day04/input/input.txt"),
-        },
+        register_day!(4, "optimized", day04::Day04Optimized, "day04/input/input.txt"),
         // Day 4 - original implementation (for benchmarking)
-        DayInfo {
-            number: 4,
-            impl_name: Some("original".to_string()),
-            solver: Box::new(day04::Day04),
-            input: include_str!("day04/input/input.txt"),
-        },
+        register_day!(4, "original", day04::Day04, "day04/input/input.txt"),
     ]
 }
 

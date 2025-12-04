@@ -7,6 +7,7 @@
 //! Part 1: Count how many times the dial lands on position 0 after any rotation.
 //! Part 2: Count how many times the dial passes through 0 during any rotation (including at the end).
 
+use crate::common::parse_lines;
 use crate::runner::Day;
 
 /// Solver for Day 1
@@ -29,19 +30,16 @@ fn count_zeros(input: &str) -> usize {
     const DIAL_SIZE: i32 = 100;
     const START_POS: i32 = 50;
 
+    let rotations = parse_lines(input, |line| {
+        let direction = line.chars().next()?;
+        let distance: i32 = line[1..].parse().ok()?;
+        Some((direction, distance))
+    });
+
     let mut position = START_POS;
     let mut zero_count = 0;
 
-    for line in input.lines() {
-        let line = line.trim();
-        if line.is_empty() {
-            continue;
-        }
-
-        // Parse direction (first char) and distance (rest)
-        let direction = line.chars().next().unwrap();
-        let distance: i32 = line[1..].parse().unwrap();
-
+    for (direction, distance) in rotations {
         // Apply rotation
         position = match direction {
             'L' => (position - distance).rem_euclid(DIAL_SIZE),
@@ -72,18 +70,16 @@ fn count_zeros_during_rotations(input: &str) -> usize {
     const DIAL_SIZE: i32 = 100;
     const START_POS: i32 = 50;
 
+    let rotations = parse_lines(input, |line| {
+        let direction = line.chars().next()?;
+        let distance: i32 = line[1..].parse().ok()?;
+        Some((direction, distance))
+    });
+
     let mut position = START_POS;
     let mut zero_count = 0;
 
-    for line in input.lines() {
-        let line = line.trim();
-        if line.is_empty() {
-            continue;
-        }
-
-        let direction = line.chars().next().unwrap();
-        let distance: i32 = line[1..].parse().unwrap();
-
+    for (direction, distance) in rotations {
         // Count zeros crossed during this rotation
         zero_count += match direction {
             'L' => {
@@ -263,23 +259,5 @@ L82";
     }
 }
 
-#[cfg(all(test, not(debug_assertions)))]
-mod benches {
-    extern crate test;
-    use super::*;
-    use test::Bencher;
-
-    #[bench]
-    fn bench_part1(b: &mut Bencher) {
-        let input = include_str!("input/input.txt");
-        let day = Day01;
-        b.iter(|| day.part1(input));
-    }
-
-    #[bench]
-    fn bench_part2(b: &mut Bencher) {
-        let input = include_str!("input/input.txt");
-        let day = Day01;
-        b.iter(|| day.part2(input));
-    }
-}
+// Define benchmarks using the common macro
+crate::define_day_benches!(Day01);

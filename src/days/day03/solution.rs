@@ -94,23 +94,5 @@ mod tests {
     }
 }
 
-#[cfg(test)]
-mod benches {
-    extern crate test;
-    use super::*;
-    use test::Bencher;
-
-    #[bench]
-    fn bench_part1(b: &mut Bencher) {
-        let input = include_str!("input/input.txt");
-        let day = Day03;
-        b.iter(|| day.part1(input));
-    }
-
-    #[bench]
-    fn bench_part2(b: &mut Bencher) {
-        let input = include_str!("input/input.txt");
-        let day = Day03;
-        b.iter(|| day.part2(input));
-    }
-}
+// Define benchmarks using the common macro
+crate::define_day_benches!(Day03);
