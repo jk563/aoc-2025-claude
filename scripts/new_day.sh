@@ -108,26 +108,8 @@ TODO: Add example input from puzzle";
     }
 }
 
-#[cfg(test)]
-mod benches {
-    extern crate test;
-    use super::*;
-    use test::Bencher;
-
-    #[bench]
-    fn bench_part1(b: &mut Bencher) {
-        let input = include_str!("input/input.txt");
-        let day = DayDAY_PADDED;
-        b.iter(|| day.part1(input));
-    }
-
-    #[bench]
-    fn bench_part2(b: &mut Bencher) {
-        let input = include_str!("input/input.txt");
-        let day = DayDAY_PADDED;
-        b.iter(|| day.part2(input));
-    }
-}
+// Define benchmarks using the common macro
+crate::define_day_benches!(DayDAY_PADDED);
 EOF
 
 # Replace placeholders in solution.rs
@@ -209,7 +191,7 @@ echo "  1. Add puzzle description to: $DAY_DIR/input/puzzle.txt"
 echo "  2. Add your input to: $DAY_DIR/input/input.txt"
 echo "  3. Register day in: src/days/mod.rs"
 echo "     - Add: pub mod day$DAY_PADDED;"
-echo "     - Register in get_days() function"
+echo "     - Add to get_days(): register_day!($DAY_NUM, day$DAY_PADDED::Day$DAY_PADDED, \"day$DAY_PADDED/input/input.txt\")"
 echo "  4. Implement solution in: $DAY_DIR/solution.rs"
 echo "  5. Run tests: just test-day $DAY_PADDED"
 echo
