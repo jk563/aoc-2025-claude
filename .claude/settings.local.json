@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(./scripts/new_day.sh:*)",
-      "Bash(cargo test:*)"
+      "Bash(cargo test:*)",
+      "Bash(cargo run:*)"
     ],
     "deny": [],
     "ask": []

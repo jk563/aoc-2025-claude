@@ -11,6 +11,7 @@ use crate::runner::DayInfo;
 pub mod day01;
 pub mod day02;
 pub mod day03;
+pub mod day04;
 
 /// Get all registered days
 ///
@@ -35,6 +36,12 @@ pub fn get_days() -> Vec<DayInfo> {
             impl_name: None,
             solver: Box::new(day03::Day03),
             input: include_str!("day03/input/input.txt"),
+        },
+        DayInfo {
+            number: 4,
+            impl_name: None,
+            solver: Box::new(day04::Day04Optimized),
+            input: include_str!("day04/input/input.txt"),
         },
     ]
 }
@@ -79,6 +86,20 @@ pub fn get_all_implementations() -> Vec<DayInfo> {
             impl_name: None,
             solver: Box::new(day03::Day03),
             input: include_str!("day03/input/input.txt"),
+        },
+        // Day 4 - optimized implementation (default)
+        DayInfo {
+            number: 4,
+            impl_name: Some("optimized".to_string()),
+            solver: Box::new(day04::Day04Optimized),
+            input: include_str!("day04/input/input.txt"),
+        },
+        // Day 4 - original implementation (for benchmarking)
+        DayInfo {
+            number: 4,
+            impl_name: Some("original".to_string()),
+            solver: Box::new(day04::Day04),
+            input: include_str!("day04/input/input.txt"),
         },
     ]
 }
