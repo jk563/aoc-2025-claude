@@ -49,11 +49,11 @@ jobs:
     - name: Run tests
       run: cargo test --all-features
 
-    - name: Build release binary
-      run: cargo build --release
-
-    - name: Show all implementations performance
+    - name: Build and run release binary
       run: |
+        echo "Building release binary for performance testing..."
+        cargo build --release
+
         echo "## Performance Results" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### All Implementations" >> $GITHUB_STEP_SUMMARY
@@ -61,8 +61,6 @@ jobs:
         ./target/release/aoc2025 --all-impls >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
 
-    - name: Show default implementation performance
-      run: |
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Default Implementations (Fastest)" >> $GITHUB_STEP_SUMMARY
         echo '```' >> $GITHUB_STEP_SUMMARY
