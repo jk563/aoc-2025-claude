@@ -132,21 +132,37 @@ impl Grid {
         // Top row
         if row > 0 {
             let above = idx - self.cols;
-            if col > 0 && self.data[above - 1] == b'@' { count += 1; }
-            if self.data[above] == b'@' { count += 1; }
-            if col < self.cols - 1 && self.data[above + 1] == b'@' { count += 1; }
+            if col > 0 && self.data[above - 1] == b'@' {
+                count += 1;
+            }
+            if self.data[above] == b'@' {
+                count += 1;
+            }
+            if col < self.cols - 1 && self.data[above + 1] == b'@' {
+                count += 1;
+            }
         }
 
         // Same row
-        if col > 0 && self.data[idx - 1] == b'@' { count += 1; }
-        if col < self.cols - 1 && self.data[idx + 1] == b'@' { count += 1; }
+        if col > 0 && self.data[idx - 1] == b'@' {
+            count += 1;
+        }
+        if col < self.cols - 1 && self.data[idx + 1] == b'@' {
+            count += 1;
+        }
 
         // Bottom row
         if row < self.rows - 1 {
             let below = idx + self.cols;
-            if col > 0 && self.data[below - 1] == b'@' { count += 1; }
-            if self.data[below] == b'@' { count += 1; }
-            if col < self.cols - 1 && self.data[below + 1] == b'@' { count += 1; }
+            if col > 0 && self.data[below - 1] == b'@' {
+                count += 1;
+            }
+            if self.data[below] == b'@' {
+                count += 1;
+            }
+            if col < self.cols - 1 && self.data[below + 1] == b'@' {
+                count += 1;
+            }
         }
 
         count
@@ -161,21 +177,33 @@ impl Grid {
         // Top row
         if row > 0 {
             let above = idx - self.cols;
-            if col > 0 { neighbors.push(above - 1); }
+            if col > 0 {
+                neighbors.push(above - 1);
+            }
             neighbors.push(above);
-            if col < self.cols - 1 { neighbors.push(above + 1); }
+            if col < self.cols - 1 {
+                neighbors.push(above + 1);
+            }
         }
 
         // Same row
-        if col > 0 { neighbors.push(idx - 1); }
-        if col < self.cols - 1 { neighbors.push(idx + 1); }
+        if col > 0 {
+            neighbors.push(idx - 1);
+        }
+        if col < self.cols - 1 {
+            neighbors.push(idx + 1);
+        }
 
         // Bottom row
         if row < self.rows - 1 {
             let below = idx + self.cols;
-            if col > 0 { neighbors.push(below - 1); }
+            if col > 0 {
+                neighbors.push(below - 1);
+            }
             neighbors.push(below);
-            if col < self.cols - 1 { neighbors.push(below + 1); }
+            if col < self.cols - 1 {
+                neighbors.push(below + 1);
+            }
         }
 
         neighbors.into_iter()
@@ -270,24 +298,45 @@ impl GridWithCounts {
                 // Count all 8 neighbors
                 if row > 0 {
                     let above = idx - cols;
-                    if col > 0 && data[above - 1] == b'@' { neighbor_counts[idx] += 1; }
-                    if data[above] == b'@' { neighbor_counts[idx] += 1; }
-                    if col < cols - 1 && data[above + 1] == b'@' { neighbor_counts[idx] += 1; }
+                    if col > 0 && data[above - 1] == b'@' {
+                        neighbor_counts[idx] += 1;
+                    }
+                    if data[above] == b'@' {
+                        neighbor_counts[idx] += 1;
+                    }
+                    if col < cols - 1 && data[above + 1] == b'@' {
+                        neighbor_counts[idx] += 1;
+                    }
                 }
 
-                if col > 0 && data[idx - 1] == b'@' { neighbor_counts[idx] += 1; }
-                if col < cols - 1 && data[idx + 1] == b'@' { neighbor_counts[idx] += 1; }
+                if col > 0 && data[idx - 1] == b'@' {
+                    neighbor_counts[idx] += 1;
+                }
+                if col < cols - 1 && data[idx + 1] == b'@' {
+                    neighbor_counts[idx] += 1;
+                }
 
                 if row < rows - 1 {
                     let below = idx + cols;
-                    if col > 0 && data[below - 1] == b'@' { neighbor_counts[idx] += 1; }
-                    if data[below] == b'@' { neighbor_counts[idx] += 1; }
-                    if col < cols - 1 && data[below + 1] == b'@' { neighbor_counts[idx] += 1; }
+                    if col > 0 && data[below - 1] == b'@' {
+                        neighbor_counts[idx] += 1;
+                    }
+                    if data[below] == b'@' {
+                        neighbor_counts[idx] += 1;
+                    }
+                    if col < cols - 1 && data[below + 1] == b'@' {
+                        neighbor_counts[idx] += 1;
+                    }
                 }
             }
         }
 
-        Self { data, neighbor_counts, cols, rows }
+        Self {
+            data,
+            neighbor_counts,
+            cols,
+            rows,
+        }
     }
 
     /// Get all valid neighbor indices for a position
@@ -301,21 +350,40 @@ impl GridWithCounts {
         // Top row
         if row > 0 {
             let above = idx - self.cols;
-            if col > 0 { result[i] = Some(above - 1); i += 1; }
-            result[i] = Some(above); i += 1;
-            if col < self.cols - 1 { result[i] = Some(above + 1); i += 1; }
+            if col > 0 {
+                result[i] = Some(above - 1);
+                i += 1;
+            }
+            result[i] = Some(above);
+            i += 1;
+            if col < self.cols - 1 {
+                result[i] = Some(above + 1);
+                i += 1;
+            }
         }
 
         // Same row
-        if col > 0 { result[i] = Some(idx - 1); i += 1; }
-        if col < self.cols - 1 { result[i] = Some(idx + 1); i += 1; }
+        if col > 0 {
+            result[i] = Some(idx - 1);
+            i += 1;
+        }
+        if col < self.cols - 1 {
+            result[i] = Some(idx + 1);
+            i += 1;
+        }
 
         // Bottom row
         if row < self.rows - 1 {
             let below = idx + self.cols;
-            if col > 0 { result[i] = Some(below - 1); i += 1; }
-            result[i] = Some(below); i += 1;
-            if col < self.cols - 1 { result[i] = Some(below + 1); }
+            if col > 0 {
+                result[i] = Some(below - 1);
+                i += 1;
+            }
+            result[i] = Some(below);
+            i += 1;
+            if col < self.cols - 1 {
+                result[i] = Some(below + 1);
+            }
         }
 
         result

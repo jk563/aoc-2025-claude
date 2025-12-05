@@ -82,7 +82,12 @@ pub fn get_all_implementations() -> Vec<DayInfo> {
         // Day 4 - default (fastest)
         register_day!(4, day04::Day04, "day04/input/input.txt"),
         // Day 4 - dirty tracking
-        register_day!(4, "dirty-tracking", day04::Day04DirtyTracking, "day04/input/input.txt"),
+        register_day!(
+            4,
+            "dirty-tracking",
+            day04::Day04DirtyTracking,
+            "day04/input/input.txt"
+        ),
         // Day 4 - naive baseline
         register_day!(4, "naive", day04::Day04Naive, "day04/input/input.txt"),
         // Day 5 - single implementation

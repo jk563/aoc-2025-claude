@@ -27,10 +27,7 @@ fn parse_input(input: &str) -> (Vec<(u64, u64)>, Vec<u64>) {
     let ranges = parts[0]
         .lines()
         .map(|line| {
-            let nums: Vec<u64> = line
-                .split('-')
-                .map(|n| n.parse().unwrap())
-                .collect();
+            let nums: Vec<u64> = line.split('-').map(|n| n.parse().unwrap()).collect();
             (nums[0], nums[1])
         })
         .collect();

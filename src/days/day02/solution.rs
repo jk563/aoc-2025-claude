@@ -579,7 +579,7 @@ mod tests {
     fn test_sum_repeated_in_range_part1() {
         // Test specific ranges with r=2 (part 1 constraint)
         assert_eq!(sum_repeated_in_range(11, 22, 2, Some(2)), 11 + 22); // 11, 22
-        // In range 1000-2000, valid patterns are: 1010, 1111, 1212, ..., 1919
+                                                                        // In range 1000-2000, valid patterns are: 1010, 1111, 1212, ..., 1919
         assert_eq!(
             sum_repeated_in_range(1000, 2000, 2, Some(2)),
             1010 + 1111 + 1212 + 1313 + 1414 + 1515 + 1616 + 1717 + 1818 + 1919
