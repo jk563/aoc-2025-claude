@@ -322,14 +322,15 @@ impl GridWithCounts {
     }
 }
 
-/// Default solver using neighbor count tracking (fastest)
+/// Default solver using hybrid approach (fastest for both parts)
 pub struct Day04;
 
 impl Day for Day04 {
     fn part1(&self, input: &str) -> String {
-        let grid = GridWithCounts::parse(input);
+        // Use dirty tracking approach for part 1 (faster without pre-computation overhead)
+        let grid = Grid::parse(input);
         let accessible = (0..grid.data.len())
-            .filter(|&idx| grid.data[idx] == b'@' && grid.neighbor_counts[idx] < 4)
+            .filter(|&idx| grid.get(idx) == b'@' && grid.count_adjacent(idx) < 4)
             .count();
 
         accessible.to_string()
@@ -338,6 +339,7 @@ impl Day for Day04 {
     fn part2(&self, input: &str) -> String {
         use std::collections::VecDeque;
 
+        // Use neighbor count tracking for part 2 (faster for iterative removal)
         let mut grid = GridWithCounts::parse(input);
         let mut total_removed = 0;
 

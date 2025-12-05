@@ -11,15 +11,19 @@
 //!
 //! ## Algorithm
 //!
-//! ### Default Implementation: Day04
+//! ### Default Implementation: Day04 (Hybrid)
 //!
-//! Uses pre-computed neighbor counts with incremental updates:
+//! Uses the best algorithm for each part:
+//! - **Part 1:** Simple neighbor counting without pre-computation overhead
+//! - **Part 2:** Pre-computed neighbor counts with incremental updates via VecDeque
+//!
+//! Algorithm for Part 2:
 //! 1. Parse grid and compute initial neighbor counts for all rolls
 //! 2. Initialize queue with all accessible rolls (< 4 neighbors)
 //! 3. Process queue: remove roll, decrement neighbor counts, add newly accessible rolls
 //! 4. Each roll is processed exactly once
 //!
-//! **Performance:** ~0.96ms total (220µs part1, 519µs part2)
+//! **Performance:** ~1.22ms total (213µs part1, 1.01ms part2)
 //!
 //! ### Alternative Implementations
 //!
