@@ -54,7 +54,7 @@ pub mod day05;
 pub fn get_days() -> Vec<DayInfo> {
     vec![
         register_day!(1, day01::Day01, "day01/input/input.txt"),
-        register_day!(2, day02::Day02Math, "day02/input/input.txt"),
+        register_day!(2, day02::Day02, "day02/input/input.txt"),
         register_day!(3, day03::Day03, "day03/input/input.txt"),
         register_day!(4, day04::Day04Optimized, "day04/input/input.txt"),
         register_day!(5, day05::Day05, "day05/input/input.txt"),
@@ -69,12 +69,14 @@ pub fn get_all_implementations() -> Vec<DayInfo> {
     vec![
         // Day 1 - single implementation
         register_day!(1, day01::Day01, "day01/input/input.txt"),
+        // Day 2 - mathematical generation (fastest, default)
+        register_day!(2, "generate", day02::Day02Generate, "day02/input/input.txt"),
+        // Day 2 - modulo-based implementation
+        register_day!(2, "modulo", day02::Day02Modulo, "day02/input/input.txt"),
         // Day 2 - math-based implementation
         register_day!(2, "math", day02::Day02Math, "day02/input/input.txt"),
         // Day 2 - string-based implementation
         register_day!(2, "string", day02::Day02String, "day02/input/input.txt"),
-        // Day 2 - modulo-based implementation (fastest)
-        register_day!(2, "modulo", day02::Day02Modulo, "day02/input/input.txt"),
         // Day 3 - single implementation
         register_day!(3, day03::Day03, "day03/input/input.txt"),
         // Day 4 - optimized implementation (default)
