@@ -7,11 +7,7 @@ pub struct Day03;
 
 impl Day for Day03 {
     fn part1(&self, input: &str) -> String {
-        input
-            .lines()
-            .map(max_joltage)
-            .sum::<u32>()
-            .to_string()
+        input.lines().map(max_joltage).sum::<u32>().to_string()
     }
 
     fn part2(&self, input: &str) -> String {
