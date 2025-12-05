@@ -56,7 +56,7 @@ pub fn get_days() -> Vec<DayInfo> {
         register_day!(1, day01::Day01, "day01/input/input.txt"),
         register_day!(2, day02::Day02, "day02/input/input.txt"),
         register_day!(3, day03::Day03, "day03/input/input.txt"),
-        register_day!(4, day04::Day04Optimized, "day04/input/input.txt"),
+        register_day!(4, day04::Day04NeighborCount, "day04/input/input.txt"),
         register_day!(5, day05::Day05, "day05/input/input.txt"),
     ]
 }
@@ -79,7 +79,9 @@ pub fn get_all_implementations() -> Vec<DayInfo> {
         register_day!(2, "string", day02::Day02String, "day02/input/input.txt"),
         // Day 3 - single implementation
         register_day!(3, day03::Day03, "day03/input/input.txt"),
-        // Day 4 - optimized implementation (default)
+        // Day 4 - neighbor count tracking (fastest, default)
+        register_day!(4, "neighbor-count", day04::Day04NeighborCount, "day04/input/input.txt"),
+        // Day 4 - optimized with dirty tracking
         register_day!(4, "optimized", day04::Day04Optimized, "day04/input/input.txt"),
         // Day 4 - original implementation (for benchmarking)
         register_day!(4, "original", day04::Day04, "day04/input/input.txt"),

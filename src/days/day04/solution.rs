@@ -245,6 +245,134 @@ impl Day for Day04Optimized {
     }
 }
 
+/// Grid with pre-computed neighbor counts for maximum performance
+struct GridWithCounts {
+    data: Vec<u8>,
+    neighbor_counts: Vec<u8>,
+    cols: usize,
+    rows: usize,
+}
+
+impl GridWithCounts {
+    fn parse(input: &str) -> Self {
+        let lines: Vec<&str> = input.lines().collect();
+        let rows = lines.len();
+        let cols = lines[0].len();
+        let data: Vec<u8> = input.bytes().filter(|&b| b != b'\n').collect();
+
+        // Pre-compute neighbor counts for all positions
+        let mut neighbor_counts = vec![0u8; data.len()];
+        for idx in 0..data.len() {
+            if data[idx] == b'@' {
+                let row = idx / cols;
+                let col = idx % cols;
+
+                // Count all 8 neighbors
+                if row > 0 {
+                    let above = idx - cols;
+                    if col > 0 && data[above - 1] == b'@' { neighbor_counts[idx] += 1; }
+                    if data[above] == b'@' { neighbor_counts[idx] += 1; }
+                    if col < cols - 1 && data[above + 1] == b'@' { neighbor_counts[idx] += 1; }
+                }
+
+                if col > 0 && data[idx - 1] == b'@' { neighbor_counts[idx] += 1; }
+                if col < cols - 1 && data[idx + 1] == b'@' { neighbor_counts[idx] += 1; }
+
+                if row < rows - 1 {
+                    let below = idx + cols;
+                    if col > 0 && data[below - 1] == b'@' { neighbor_counts[idx] += 1; }
+                    if data[below] == b'@' { neighbor_counts[idx] += 1; }
+                    if col < cols - 1 && data[below + 1] == b'@' { neighbor_counts[idx] += 1; }
+                }
+            }
+        }
+
+        Self { data, neighbor_counts, cols, rows }
+    }
+
+    /// Get all valid neighbor indices for a position
+    #[inline]
+    fn neighbors(&self, idx: usize) -> [Option<usize>; 8] {
+        let row = idx / self.cols;
+        let col = idx % self.cols;
+        let mut result = [None; 8];
+        let mut i = 0;
+
+        // Top row
+        if row > 0 {
+            let above = idx - self.cols;
+            if col > 0 { result[i] = Some(above - 1); i += 1; }
+            result[i] = Some(above); i += 1;
+            if col < self.cols - 1 { result[i] = Some(above + 1); i += 1; }
+        }
+
+        // Same row
+        if col > 0 { result[i] = Some(idx - 1); i += 1; }
+        if col < self.cols - 1 { result[i] = Some(idx + 1); i += 1; }
+
+        // Bottom row
+        if row < self.rows - 1 {
+            let below = idx + self.cols;
+            if col > 0 { result[i] = Some(below - 1); i += 1; }
+            result[i] = Some(below); i += 1;
+            if col < self.cols - 1 { result[i] = Some(below + 1); }
+        }
+
+        result
+    }
+}
+
+/// Fastest solver using neighbor count tracking
+pub struct Day04NeighborCount;
+
+impl Day for Day04NeighborCount {
+    fn part1(&self, input: &str) -> String {
+        let grid = GridWithCounts::parse(input);
+        let accessible = (0..grid.data.len())
+            .filter(|&idx| grid.data[idx] == b'@' && grid.neighbor_counts[idx] < 4)
+            .count();
+
+        accessible.to_string()
+    }
+
+    fn part2(&self, input: &str) -> String {
+        use std::collections::VecDeque;
+
+        let mut grid = GridWithCounts::parse(input);
+        let mut total_removed = 0;
+
+        // Start with all rolls that can be removed
+        let mut queue: VecDeque<usize> = (0..grid.data.len())
+            .filter(|&idx| grid.data[idx] == b'@' && grid.neighbor_counts[idx] < 4)
+            .collect();
+
+        while let Some(idx) = queue.pop_front() {
+            // Skip if already removed
+            if grid.data[idx] != b'@' {
+                continue;
+            }
+
+            // Remove this roll
+            grid.data[idx] = b'.';
+            total_removed += 1;
+
+            // Update neighbor counts and add newly accessible neighbors to queue
+            for neighbor_idx in grid.neighbors(idx).iter().filter_map(|&n| n) {
+                if grid.data[neighbor_idx] == b'@' {
+                    grid.neighbor_counts[neighbor_idx] -= 1;
+
+                    // If this neighbor just became accessible, add it to queue
+                    if grid.neighbor_counts[neighbor_idx] < 4 {
+                        queue.push_back(neighbor_idx);
+                    }
+                }
+            }
+        }
+
+        total_removed.to_string()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -284,7 +412,19 @@ mod tests {
         let day = Day04Optimized;
         assert_eq!(day.part2(EXAMPLE), "43");
     }
+
+    #[test]
+    fn test_part1_example_neighbor_count() {
+        let day = Day04NeighborCount;
+        assert_eq!(day.part1(EXAMPLE), "13");
+    }
+
+    #[test]
+    fn test_part2_example_neighbor_count() {
+        let day = Day04NeighborCount;
+        assert_eq!(day.part2(EXAMPLE), "43");
+    }
 }
 
 // Define benchmarks using the common macro
-crate::define_day_benches!(Day04);
+crate::define_day_benches!(Day04NeighborCount);
