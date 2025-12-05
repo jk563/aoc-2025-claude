@@ -68,21 +68,21 @@ The key optimization is that each roll is only added to the queue once (when it 
 
 ### Three Implementations Provided
 
-1. **Day04** (Original): Naive approach that rescans entire grid each iteration
-   - Simple and readable
-   - ~9.4ms total runtime
-   - Good baseline for understanding the problem
+1. **Day04** (Default): Pre-computed neighbor counts with incremental updates
+   - Uses VecDeque for BFS-style processing
+   - ~0.97ms total runtime
+   - **Fastest implementation**
+   - Inspired by Reddit discussion solutions
 
-2. **Day04Optimized**: Maintains a HashSet of "dirty" positions to check
+2. **Day04DirtyTracking**: Maintains a HashSet of "dirty" positions to check
    - Only checks neighbors of removed rolls
    - ~1.5ms total runtime
-   - 6x faster than original
+   - Good middle-ground approach
 
-3. **Day04NeighborCount** (Default): Pre-computed neighbor counts with incremental updates
-   - Uses VecDeque for BFS-style processing
-   - ~0.96ms total runtime
-   - 10x faster than original
-   - **Inspired by Reddit discussion solutions**
+3. **Day04Naive**: Naive approach that rescans entire grid each iteration
+   - Simple and readable
+   - ~11ms total runtime
+   - Baseline for understanding the problem
 
 ### Rust Patterns Used
 
@@ -102,20 +102,20 @@ The key optimization is that each roll is only added to the queue once (when it 
 
 | Implementation | Part 1 Time | Part 2 Time | Total | Speedup |
 |----------------|-------------|-------------|-------|---------|
-| neighbor-count (default) | 220µs | 519µs | 0.96ms | **10x** |
-| optimized | 121µs | 1.41ms | 1.53ms | 6x |
-| original | 245µs | 9.20ms | 9.44ms | 1x |
+| Day04 (default) | 348µs | 620µs | 0.97ms | **11x** |
+| Day04DirtyTracking | 125µs | 1.40ms | 1.52ms | 7x |
+| Day04Naive | 246µs | 10.88ms | 11.13ms | 1x |
 
-**Winner:** `Day04NeighborCount` - Fastest for Part 2 due to:
+**Winner:** `Day04` - Fastest overall due to:
 - Pre-computation eliminates redundant neighbor counting
 - Queue-based processing visits each roll exactly once
 - No HashSet overhead (uses flat arrays)
 
 ### Performance Insights
 
-- **Part 1** is fastest with `optimized` due to simpler counting without queue overhead
-- **Part 2** benefits massively from incremental neighbor count updates
-- The neighbor-count approach scales better with larger inputs and more iterations
+- **Part 1** is fastest with `Day04DirtyTracking` due to simpler counting without queue overhead
+- **Part 2** benefits massively from incremental neighbor count updates in `Day04`
+- The default approach scales better with larger inputs and more iterations
 
 ## Alternative Approaches Considered
 

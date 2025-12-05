@@ -11,7 +11,7 @@
 //!
 //! ## Algorithm
 //!
-//! ### Default Implementation: Day04NeighborCount
+//! ### Default Implementation: Day04
 //!
 //! Uses pre-computed neighbor counts with incremental updates:
 //! 1. Parse grid and compute initial neighbor counts for all rolls
@@ -23,9 +23,9 @@
 //!
 //! ### Alternative Implementations
 //!
-//! - `Day04Optimized`: Uses HashSet dirty tracking (~1.5ms total)
-//! - `Day04`: Original naive grid scanning (~9.4ms total)
+//! - `Day04DirtyTracking`: Uses HashSet dirty tracking (~1.5ms total)
+//! - `Day04Naive`: Naive grid scanning (~5.6ms total)
 
 mod solution;
 
-pub use solution::{Day04, Day04NeighborCount, Day04Optimized};
+pub use solution::{Day04, Day04DirtyTracking, Day04Naive};

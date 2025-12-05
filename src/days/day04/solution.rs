@@ -2,10 +2,10 @@
 
 use crate::runner::Day;
 
-/// Solver for Day 4
-pub struct Day04;
+/// Naive baseline solver - rescans entire grid each iteration
+pub struct Day04Naive;
 
-impl Day for Day04 {
+impl Day for Day04Naive {
     fn part1(&self, input: &str) -> String {
         let grid: Vec<Vec<char>> = input.lines().map(|line| line.chars().collect()).collect();
         let rows = grid.len();
@@ -182,10 +182,10 @@ impl Grid {
     }
 }
 
-/// Optimized solver for Day 4 using flat arrays and dirty set tracking
-pub struct Day04Optimized;
+/// Solver using flat arrays and dirty set tracking
+pub struct Day04DirtyTracking;
 
-impl Day for Day04Optimized {
+impl Day for Day04DirtyTracking {
     fn part1(&self, input: &str) -> String {
         let grid = Grid::parse(input);
         let accessible = (0..grid.data.len())
@@ -322,10 +322,10 @@ impl GridWithCounts {
     }
 }
 
-/// Fastest solver using neighbor count tracking
-pub struct Day04NeighborCount;
+/// Default solver using neighbor count tracking (fastest)
+pub struct Day04;
 
-impl Day for Day04NeighborCount {
+impl Day for Day04 {
     fn part1(&self, input: &str) -> String {
         let grid = GridWithCounts::parse(input);
         let accessible = (0..grid.data.len())
@@ -402,29 +402,29 @@ mod tests {
     }
 
     #[test]
-    fn test_part1_example_optimized() {
-        let day = Day04Optimized;
+    fn test_part1_example_naive() {
+        let day = Day04Naive;
         assert_eq!(day.part1(EXAMPLE), "13");
     }
 
     #[test]
-    fn test_part2_example_optimized() {
-        let day = Day04Optimized;
+    fn test_part2_example_naive() {
+        let day = Day04Naive;
         assert_eq!(day.part2(EXAMPLE), "43");
     }
 
     #[test]
-    fn test_part1_example_neighbor_count() {
-        let day = Day04NeighborCount;
+    fn test_part1_example_dirty_tracking() {
+        let day = Day04DirtyTracking;
         assert_eq!(day.part1(EXAMPLE), "13");
     }
 
     #[test]
-    fn test_part2_example_neighbor_count() {
-        let day = Day04NeighborCount;
+    fn test_part2_example_dirty_tracking() {
+        let day = Day04DirtyTracking;
         assert_eq!(day.part2(EXAMPLE), "43");
     }
 }
 
 // Define benchmarks using the common macro
-crate::define_day_benches!(Day04NeighborCount);
+crate::define_day_benches!(Day04);
