@@ -43,10 +43,10 @@
 /// # Examples
 ///
 /// ```
-/// use aoc_2025::common::parse_lines;
+/// use aoc2025::common::parse_lines;
 ///
 /// let input = "L10\nR20\n\nL30\n";
-/// let lines = parse_lines(input, |line| {
+/// let lines = parse_lines(input, |line: &str| {
 ///     let direction = line.chars().next()?;
 ///     let distance: i32 = line[1..].parse().ok()?;
 ///     Some((direction, distance))

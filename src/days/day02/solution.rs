@@ -178,7 +178,7 @@ fn extract_pattern(n: u64, total_digits: u32, pattern_len: u32) -> u64 {
 
 /// Check if a number consists of a pattern repeated exactly
 fn matches_repeated_pattern(n: u64, total_digits: u32, pattern_len: u32) -> bool {
-    if total_digits % pattern_len != 0 {
+    if !total_digits.is_multiple_of(pattern_len) {
         return false;
     }
 
@@ -201,7 +201,7 @@ fn is_invalid_id(id: u64) -> bool {
     let digits = count_digits(id);
 
     // Must have even number of digits to be splittable
-    if digits % 2 != 0 {
+    if !digits.is_multiple_of(2) {
         return false;
     }
 
@@ -251,13 +251,13 @@ fn is_invalid_id_modulo(id: u64) -> bool {
     let digits = count_digits(id);
 
     // Must have even number of digits
-    if digits % 2 != 0 {
+    if !digits.is_multiple_of(2) {
         return false;
     }
 
     // For part 1, check if divisible by 10^(digits/2) + 1
     let divisor = compute_divisor(digits / 2, 2);
-    id % divisor == 0
+    id.is_multiple_of(divisor)
 }
 
 /// Check if an ID is invalid (made of a pattern repeated at least twice) - Modulo-based implementation
@@ -267,11 +267,11 @@ fn is_invalid_id_v2_modulo(id: u64) -> bool {
     // Try all possible pattern lengths from 1 to digits/2
     for pattern_len in 1..=(digits / 2) {
         // Check if digits is divisible by pattern_len
-        if digits % pattern_len == 0 {
+        if digits.is_multiple_of(pattern_len) {
             let repeat_count = digits / pattern_len;
             let divisor = compute_divisor(pattern_len, repeat_count);
 
-            if id % divisor == 0 {
+            if id.is_multiple_of(divisor) {
                 return true;
             }
         }
@@ -332,7 +332,7 @@ fn sum_repeated_in_range(
             let min_k128 = 10u128.pow((d - 1) as u32);
             let max_k128 = pow10_d - 1;
 
-            let k_lo = ((lower128 + f - 1) / f).max(min_k128);
+            let k_lo = lower128.div_ceil(f).max(min_k128);
             let k_hi = (upper128 / f).min(max_k128);
 
             if k_lo > k_hi {
@@ -378,20 +378,22 @@ impl Day for GeneratingSolver {
 
 // Solver instances
 
+/// Type alias for validation solver to reduce complexity
+type ValidationSolver = ValidatingSolver<fn(u64) -> bool, fn(u64) -> bool>;
+
 /// Solver for Day 2 using math-based validation
 ///
 /// Validates each number in the range by extracting digit groups using
 /// division and modulo operations. Moderate performance.
 #[allow(non_upper_case_globals)]
-pub const Day02Math: ValidatingSolver<fn(u64) -> bool, fn(u64) -> bool> =
-    ValidatingSolver::new(is_invalid_id, is_invalid_id_v2);
+pub const Day02Math: ValidationSolver = ValidatingSolver::new(is_invalid_id, is_invalid_id_v2);
 
 /// Solver for Day 2 using string-based validation
 ///
 /// Validates by converting numbers to strings and comparing substrings.
 /// Slowest approach due to allocation overhead.
 #[allow(non_upper_case_globals)]
-pub const Day02String: ValidatingSolver<fn(u64) -> bool, fn(u64) -> bool> =
+pub const Day02String: ValidationSolver =
     ValidatingSolver::new(is_invalid_id_string, is_invalid_id_v2_string);
 
 /// Solver for Day 2 using modulo divisor checking
@@ -399,7 +401,7 @@ pub const Day02String: ValidatingSolver<fn(u64) -> bool, fn(u64) -> bool> =
 /// Validates using divisibility rules, fastest of the brute-force approaches.
 /// Still checks every number in the range.
 #[allow(non_upper_case_globals)]
-pub const Day02Modulo: ValidatingSolver<fn(u64) -> bool, fn(u64) -> bool> =
+pub const Day02Modulo: ValidationSolver =
     ValidatingSolver::new(is_invalid_id_modulo, is_invalid_id_v2_modulo);
 
 /// Solver for Day 2 using mathematical generation

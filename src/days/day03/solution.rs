@@ -9,7 +9,7 @@ impl Day for Day03 {
     fn part1(&self, input: &str) -> String {
         input
             .lines()
-            .map(|line| max_joltage(line))
+            .map(max_joltage)
             .sum::<u32>()
             .to_string()
     }

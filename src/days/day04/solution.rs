@@ -83,10 +83,13 @@ fn count_adjacent_rolls(grid: &[Vec<char>], row: usize, col: usize) -> usize {
             let new_row = row as i32 + dr;
             let new_col = col as i32 + dc;
 
-            if new_row >= 0 && new_row < rows as i32 && new_col >= 0 && new_col < cols as i32 {
-                if grid[new_row as usize][new_col as usize] == '@' {
-                    count += 1;
-                }
+            if new_row >= 0
+                && new_row < rows as i32
+                && new_col >= 0
+                && new_col < cols as i32
+                && grid[new_row as usize][new_col as usize] == '@'
+            {
+                count += 1;
             }
         }
     }
