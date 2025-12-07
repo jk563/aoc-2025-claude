@@ -3,8 +3,8 @@
 //! Part 1: Tachyon beam splitter simulation. Beams merge at same column. Count splits.
 //! Part 2: Quantum timeline counting. Particles don't merge. Count distinct timelines.
 
-use std::collections::{HashMap, HashSet};
 use crate::runner::Day;
+use std::collections::{HashMap, HashSet};
 
 /// Solver for Day 7
 pub struct Day07;
@@ -25,7 +25,6 @@ fn count_splits(input: &str) -> usize {
         return 0;
     }
 
-    let height = lines.len();
     let width = lines.iter().map(|l| l.len()).max().unwrap_or(0);
 
     // Find starting position
@@ -39,21 +38,17 @@ fn count_splits(input: &str) -> usize {
     active_beams.insert(start_col);
     let mut split_count = 0;
 
-    for row in (start_row + 1)..height {
+    for splitters in splitter_map.iter().skip(start_row + 1) {
         if active_beams.is_empty() {
             break;
         }
 
-        let splitters = &splitter_map[row];
         if splitters.is_empty() {
             continue;
         }
 
         // Find beams that hit splitters
-        let hits: Vec<usize> = active_beams
-            .intersection(splitters)
-            .copied()
-            .collect();
+        let hits: Vec<usize> = active_beams.intersection(splitters).copied().collect();
 
         split_count += hits.len();
 
@@ -78,7 +73,6 @@ fn count_timelines(input: &str) -> u64 {
         return 0;
     }
 
-    let height = lines.len();
     let width = lines.iter().map(|l| l.len()).max().unwrap_or(0);
 
     // Find starting position
@@ -91,12 +85,11 @@ fn count_timelines(input: &str) -> u64 {
     let mut particle_counts: HashMap<usize, u64> = HashMap::new();
     particle_counts.insert(start_col, 1);
 
-    for row in (start_row + 1)..height {
+    for splitters in splitter_map.iter().skip(start_row + 1) {
         if particle_counts.is_empty() {
             break;
         }
 
-        let splitters = &splitter_map[row];
         if splitters.is_empty() {
             continue;
         }
