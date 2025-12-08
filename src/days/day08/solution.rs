@@ -1,8 +1,6 @@
 //! Solution implementation for Day 8
 
 use crate::runner::Day;
-use std::cmp::Reverse;
-use std::collections::BinaryHeap;
 
 /// Solver for Day 8
 pub struct Day08;
@@ -81,153 +79,11 @@ fn parse_coordinates(input: &str) -> Vec<(i64, i64, i64)> {
         .collect()
 }
 
-/// Spatial grid for fast neighbor queries
-struct SpatialGrid {
-    grid: std::collections::HashMap<(i32, i32, i32), Vec<usize>>,
-    cell_size: i64,
-}
-
-impl SpatialGrid {
-    fn new(coordinates: &[(i64, i64, i64)], cell_size: i64) -> Self {
-        let mut grid = std::collections::HashMap::new();
-
-        for (idx, &(x, y, z)) in coordinates.iter().enumerate() {
-            let cell = (
-                (x / cell_size) as i32,
-                (y / cell_size) as i32,
-                (z / cell_size) as i32,
-            );
-            grid.entry(cell).or_insert_with(Vec::new).push(idx);
-        }
-
-        Self { grid, cell_size }
-    }
-
-    fn get_cell(&self, coord: (i64, i64, i64)) -> (i32, i32, i32) {
-        (
-            (coord.0 / self.cell_size) as i32,
-            (coord.1 / self.cell_size) as i32,
-            (coord.2 / self.cell_size) as i32,
-        )
-    }
-
-    fn get_neighbors_in_radius(&self, coord: (i64, i64, i64), radius: i32) -> Vec<usize> {
-        let center = self.get_cell(coord);
-        let mut neighbors = Vec::new();
-
-        for dx in -radius..=radius {
-            for dy in -radius..=radius {
-                for dz in -radius..=radius {
-                    let cell = (center.0 + dx, center.1 + dy, center.2 + dz);
-                    if let Some(indices) = self.grid.get(&cell) {
-                        neighbors.extend_from_slice(indices);
-                    }
-                }
-            }
-        }
-
-        neighbors
-    }
-}
-
 fn distance_squared(p1: (i64, i64, i64), p2: (i64, i64, i64)) -> i64 {
     let dx = p1.0 - p2.0;
     let dy = p1.1 - p2.1;
     let dz = p1.2 - p2.2;
     dx * dx + dy * dy + dz * dz
-}
-
-/// Solve both parts using Prim's MST algorithm
-/// Returns (part1_answer, part2_answer)
-fn solve_both_prim(coordinates: &[(i64, i64, i64)]) -> (i64, i64) {
-    let n = coordinates.len();
-    if n == 0 {
-        return (0, 0);
-    }
-
-    let mut in_mst = vec![false; n];
-    let mut min_dist = vec![i64::MAX; n];
-    let mut parent = vec![0usize; n];
-    let mut heap: BinaryHeap<Reverse<(i64, usize, usize)>> = BinaryHeap::new();
-
-    // Start from vertex 0
-    min_dist[0] = 0;
-    heap.push(Reverse((0, 0, 0)));
-
-    let mut edges_added = 0;
-    let mut uf = UnionFind::new(n);
-    let mut last_edge = (0i64, 0i64);
-
-    // Track component sizes after 1000 edges for Part 1
-    let mut part1_result = 0i64;
-
-    while let Some(Reverse((dist, u, p))) = heap.pop() {
-        // Skip if already in MST or if this is stale heap entry
-        if in_mst[u] {
-            continue;
-        }
-
-        // Add vertex u to MST
-        in_mst[u] = true;
-
-        // Record edge (unless it's the starting vertex)
-        if u != 0 {
-            edges_added += 1;
-            uf.union(p, u);
-            last_edge = (coordinates[p].0, coordinates[u].0);
-
-            // Capture Part 1 answer after processing 1000 edges
-            if edges_added == 1000 {
-                let sizes = uf.get_component_sizes();
-                part1_result = if sizes.len() >= 3 {
-                    sizes[0] as i64 * sizes[1] as i64 * sizes[2] as i64
-                } else if sizes.len() == 2 {
-                    sizes[0] as i64 * sizes[1] as i64
-                } else if sizes.len() == 1 {
-                    sizes[0] as i64
-                } else {
-                    0
-                };
-            }
-        }
-
-        // All vertices in MST? We're done
-        if edges_added == n - 1 {
-            break;
-        }
-
-        // Update distances to all non-MST vertices from u
-        for v in 0..n {
-            if !in_mst[v] {
-                let new_dist = distance_squared(coordinates[u], coordinates[v]);
-                if new_dist < min_dist[v] {
-                    min_dist[v] = new_dist;
-                    parent[v] = u;
-                    heap.push(Reverse((new_dist, v, u)));
-                }
-            }
-        }
-    }
-
-    let part2_result = last_edge.0 * last_edge.1;
-    (part1_result, part2_result)
-}
-
-fn compute_sorted_edges(coordinates: &[(i64, i64, i64)]) -> Vec<(i64, usize, usize)> {
-    let n = coordinates.len();
-    let mut edges = Vec::with_capacity((n * (n - 1)) / 2);
-
-    // Compute all pairwise distances directly into vector
-    for i in 0..n {
-        for j in (i + 1)..n {
-            let dist_sq = distance_squared(coordinates[i], coordinates[j]);
-            edges.push((dist_sq, i, j));
-        }
-    }
-
-    // Sort edges by distance (smallest first)
-    edges.sort_unstable_by_key(|e| e.0);
-    edges
 }
 
 fn solve_part1(coordinates: &[(i64, i64, i64)], pairs_to_process: usize) -> i64 {
@@ -238,6 +94,8 @@ fn solve_part1(coordinates: &[(i64, i64, i64)], pairs_to_process: usize) -> i64 
     let mut edges = Vec::with_capacity(total_edges);
 
     // Compute all pairwise distances in one pass
+    // Note: clippy suggests enumerate() but we need pairwise combinations (i,j) where i<j
+    #[allow(clippy::needless_range_loop)]
     for i in 0..n {
         let ci = coordinates[i];
         for j in (i + 1)..n {
@@ -271,85 +129,6 @@ fn solve_part1(coordinates: &[(i64, i64, i64)], pairs_to_process: usize) -> i64 
     } else {
         0
     }
-}
-
-/// Optimized Part 1 using spatial grid to prune distant pairs
-fn solve_part1_spatial(coordinates: &[(i64, i64, i64)], pairs_to_process: usize) -> i64 {
-    let n = coordinates.len();
-
-    // Build spatial grid
-    let grid = SpatialGrid::new(coordinates, 150);
-
-    // Use heap to efficiently get k smallest edges without computing all n²
-    let mut heap: BinaryHeap<Reverse<(i64, usize, usize)>> = BinaryHeap::new();
-
-    // For each point, check nearby cells first
-    for i in 0..n {
-        let candidates = grid.get_neighbors_in_radius(coordinates[i], 2);
-        for &j in &candidates {
-            if j > i {  // Avoid duplicates
-                let dist_sq = distance_squared(coordinates[i], coordinates[j]);
-                heap.push(Reverse((dist_sq, i, j)));
-            }
-        }
-    }
-
-    // If we don't have enough edges, fall back to all pairs
-    if heap.len() < pairs_to_process * 2 {
-        heap.clear();
-        for i in 0..n {
-            for j in (i + 1)..n {
-                let dist_sq = distance_squared(coordinates[i], coordinates[j]);
-                heap.push(Reverse((dist_sq, i, j)));
-            }
-        }
-    }
-
-    // Extract k smallest edges
-    let mut edges = Vec::with_capacity(pairs_to_process);
-    while edges.len() < pairs_to_process && !heap.is_empty() {
-        if let Some(Reverse((dist, i, j))) = heap.pop() {
-            edges.push((dist, i, j));
-        }
-    }
-
-    // Process edges with Union-Find
-    let mut uf = UnionFind::new(n);
-    for (_, i, j) in &edges {
-        uf.union(*i, *j);
-    }
-
-    // Find the 3 largest component sizes
-    let sizes = uf.get_component_sizes();
-    if sizes.len() >= 3 {
-        sizes[0] as i64 * sizes[1] as i64 * sizes[2] as i64
-    } else if sizes.len() == 2 {
-        sizes[0] as i64 * sizes[1] as i64
-    } else if sizes.len() == 1 {
-        sizes[0] as i64
-    } else {
-        0
-    }
-}
-
-fn solve_part2(coordinates: &[(i64, i64, i64)]) -> i64 {
-    let edges = compute_sorted_edges(coordinates);
-
-    // Process edges until all nodes are in one component
-    let mut uf = UnionFind::new(coordinates.len());
-    let mut last_edge = (0i64, 0i64);
-
-    for (_, i, j) in &edges {
-        if uf.union(*i, *j) {
-            // Track the last successful union
-            last_edge = (coordinates[*i].0, coordinates[*j].0);
-        }
-        if uf.components == 1 {
-            break;
-        }
-    }
-
-    last_edge.0 * last_edge.1
 }
 
 /// Solve Part 2 using optimized Prim's algorithm
@@ -401,84 +180,6 @@ fn solve_part2_prim(coordinates: &[(i64, i64, i64)]) -> i64 {
                 if dist < min_dist[v] {
                     min_dist[v] = dist;
                     parent[v] = u;
-                }
-            }
-        }
-    }
-
-    last_edge.0 * last_edge.1
-}
-
-/// Optimized Prim's using spatial grid to reduce distance computations
-fn solve_part2_prim_spatial(coordinates: &[(i64, i64, i64)]) -> i64 {
-    let n = coordinates.len();
-    if n == 0 {
-        return 0;
-    }
-
-    // Build spatial grid with cell size chosen to balance grid overhead vs pruning
-    let grid = SpatialGrid::new(coordinates, 200);
-
-    let mut in_mst = vec![false; n];
-    let mut min_dist = vec![i64::MAX; n];
-    let mut heap: BinaryHeap<Reverse<(i64, usize, usize)>> = BinaryHeap::new();
-
-    // Start from vertex 0
-    min_dist[0] = 0;
-    heap.push(Reverse((0, 0, 0)));
-
-    let mut edges_added = 0;
-    let mut last_edge = (0i64, 0i64);
-    let mut search_radius = 1;
-
-    while let Some(Reverse((_dist, u, p))) = heap.pop() {
-        if in_mst[u] {
-            continue;
-        }
-
-        in_mst[u] = true;
-
-        if u != 0 {
-            edges_added += 1;
-            last_edge = (coordinates[p].0, coordinates[u].0);
-        }
-
-        // All vertices in MST? We're done
-        if edges_added == n - 1 {
-            break;
-        }
-
-        // Start with nearby cells, expand if needed
-        let mut found_any = false;
-        for radius in search_radius..=5 {
-            let candidates = grid.get_neighbors_in_radius(coordinates[u], radius);
-
-            for &v in &candidates {
-                if !in_mst[v] {
-                    let new_dist = distance_squared(coordinates[u], coordinates[v]);
-                    if new_dist < min_dist[v] {
-                        min_dist[v] = new_dist;
-                        heap.push(Reverse((new_dist, v, u)));
-                        found_any = true;
-                    }
-                }
-            }
-
-            if found_any {
-                search_radius = radius;
-                break;
-            }
-        }
-
-        // If still no candidates found in nearby cells, fall back to checking all
-        if !found_any {
-            for v in 0..n {
-                if !in_mst[v] {
-                    let new_dist = distance_squared(coordinates[u], coordinates[v]);
-                    if new_dist < min_dist[v] {
-                        min_dist[v] = new_dist;
-                        heap.push(Reverse((new_dist, v, u)));
-                    }
                 }
             }
         }
