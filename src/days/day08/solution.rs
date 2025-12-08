@@ -1,6 +1,8 @@
 //! Solution implementation for Day 8
 
 use crate::runner::Day;
+use std::cmp::Reverse;
+use std::collections::BinaryHeap;
 
 /// Solver for Day 8
 pub struct Day08;
@@ -83,6 +85,82 @@ fn distance_squared(p1: (i64, i64, i64), p2: (i64, i64, i64)) -> i64 {
     dx * dx + dy * dy + dz * dz
 }
 
+/// Solve both parts using Prim's MST algorithm
+/// Returns (part1_answer, part2_answer)
+fn solve_both_prim(coordinates: &[(i64, i64, i64)]) -> (i64, i64) {
+    let n = coordinates.len();
+    if n == 0 {
+        return (0, 0);
+    }
+
+    let mut in_mst = vec![false; n];
+    let mut min_dist = vec![i64::MAX; n];
+    let mut parent = vec![0usize; n];
+    let mut heap: BinaryHeap<Reverse<(i64, usize, usize)>> = BinaryHeap::new();
+
+    // Start from vertex 0
+    min_dist[0] = 0;
+    heap.push(Reverse((0, 0, 0)));
+
+    let mut edges_added = 0;
+    let mut uf = UnionFind::new(n);
+    let mut last_edge = (0i64, 0i64);
+
+    // Track component sizes after 1000 edges for Part 1
+    let mut part1_result = 0i64;
+
+    while let Some(Reverse((dist, u, p))) = heap.pop() {
+        // Skip if already in MST or if this is stale heap entry
+        if in_mst[u] {
+            continue;
+        }
+
+        // Add vertex u to MST
+        in_mst[u] = true;
+
+        // Record edge (unless it's the starting vertex)
+        if u != 0 {
+            edges_added += 1;
+            uf.union(p, u);
+            last_edge = (coordinates[p].0, coordinates[u].0);
+
+            // Capture Part 1 answer after processing 1000 edges
+            if edges_added == 1000 {
+                let sizes = uf.get_component_sizes();
+                part1_result = if sizes.len() >= 3 {
+                    sizes[0] as i64 * sizes[1] as i64 * sizes[2] as i64
+                } else if sizes.len() == 2 {
+                    sizes[0] as i64 * sizes[1] as i64
+                } else if sizes.len() == 1 {
+                    sizes[0] as i64
+                } else {
+                    0
+                };
+            }
+        }
+
+        // All vertices in MST? We're done
+        if edges_added == n - 1 {
+            break;
+        }
+
+        // Update distances to all non-MST vertices from u
+        for v in 0..n {
+            if !in_mst[v] {
+                let new_dist = distance_squared(coordinates[u], coordinates[v]);
+                if new_dist < min_dist[v] {
+                    min_dist[v] = new_dist;
+                    parent[v] = u;
+                    heap.push(Reverse((new_dist, v, u)));
+                }
+            }
+        }
+    }
+
+    let part2_result = last_edge.0 * last_edge.1;
+    (part1_result, part2_result)
+}
+
 fn compute_sorted_edges(coordinates: &[(i64, i64, i64)]) -> Vec<(i64, usize, usize)> {
     let n = coordinates.len();
     let mut edges = Vec::with_capacity((n * (n - 1)) / 2);
@@ -159,17 +237,66 @@ fn solve_part2(coordinates: &[(i64, i64, i64)]) -> i64 {
     last_edge.0 * last_edge.1
 }
 
+/// Solve Part 2 using Prim's algorithm (faster, no sorting needed)
+fn solve_part2_prim(coordinates: &[(i64, i64, i64)]) -> i64 {
+    let n = coordinates.len();
+    if n == 0 {
+        return 0;
+    }
+
+    let mut in_mst = vec![false; n];
+    let mut min_dist = vec![i64::MAX; n];
+    let mut heap: BinaryHeap<Reverse<(i64, usize, usize)>> = BinaryHeap::new();
+
+    // Start from vertex 0
+    min_dist[0] = 0;
+    heap.push(Reverse((0, 0, 0)));
+
+    let mut edges_added = 0;
+    let mut last_edge = (0i64, 0i64);
+
+    while let Some(Reverse((_dist, u, p))) = heap.pop() {
+        if in_mst[u] {
+            continue;
+        }
+
+        in_mst[u] = true;
+
+        if u != 0 {
+            edges_added += 1;
+            last_edge = (coordinates[p].0, coordinates[u].0);
+        }
+
+        // All vertices in MST? We're done
+        if edges_added == n - 1 {
+            break;
+        }
+
+        // Update distances to all non-MST vertices from u
+        for v in 0..n {
+            if !in_mst[v] {
+                let new_dist = distance_squared(coordinates[u], coordinates[v]);
+                if new_dist < min_dist[v] {
+                    min_dist[v] = new_dist;
+                    heap.push(Reverse((new_dist, v, u)));
+                }
+            }
+        }
+    }
+
+    last_edge.0 * last_edge.1
+}
+
 impl Day for Day08 {
     fn part1(&self, input: &str) -> String {
         let coordinates = parse_coordinates(input);
-        // Process 1000 pairs for the full puzzle input
         solve_part1(&coordinates, 1000).to_string()
     }
 
     fn part2(&self, input: &str) -> String {
         let coordinates = parse_coordinates(input);
-        // Process all edges until fully connected
-        solve_part2(&coordinates).to_string()
+        // Use Prim's algorithm for Part 2 - no need to sort all edges
+        solve_part2_prim(&coordinates).to_string()
     }
 }
 
