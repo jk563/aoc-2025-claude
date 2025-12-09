@@ -1,7 +1,7 @@
 //! Solution implementation for Day 9
 
 use crate::runner::Day;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 /// Solver for Day 9
 pub struct Day09;
@@ -72,6 +72,9 @@ fn find_largest_rectangle_in_polygon(tiles: &[(i32, i32)]) -> i64 {
     let bbox_min_y = tiles.iter().map(|(_, y)| *y).min().unwrap();
     let bbox_max_y = tiles.iter().map(|(_, y)| *y).max().unwrap();
 
+    // Optimization 3: Cache point validation results
+    let mut point_cache: HashMap<(i32, i32), bool> = HashMap::new();
+
     // Check all pairs of red tiles as corners
     for i in 0..tiles.len() {
         for j in (i + 1)..tiles.len() {
@@ -91,7 +94,15 @@ fn find_largest_rectangle_in_polygon(tiles: &[(i32, i32)]) -> i64 {
             }
 
             // Check if rectangle is valid (only contains red/green tiles)
-            if is_rectangle_valid(tiles, &tile_set, min_x, max_x, min_y, max_y) {
+            if is_rectangle_valid(
+                tiles,
+                &tile_set,
+                &mut point_cache,
+                min_x,
+                max_x,
+                min_y,
+                max_y,
+            ) {
                 let width = (max_x - min_x) as i64 + 1;
                 let height = (max_y - min_y) as i64 + 1;
                 let area = width * height;
@@ -108,6 +119,7 @@ fn find_largest_rectangle_in_polygon(tiles: &[(i32, i32)]) -> i64 {
 fn is_rectangle_valid(
     polygon: &[(i32, i32)],
     tile_set: &HashSet<(i32, i32)>,
+    point_cache: &mut HashMap<(i32, i32), bool>,
     min_x: i32,
     max_x: i32,
     min_y: i32,
@@ -122,7 +134,7 @@ fn is_rectangle_valid(
     ];
 
     for &(x, y) in &corners {
-        if !is_point_valid(polygon, tile_set, x, y) {
+        if !is_point_valid_cached(polygon, tile_set, point_cache, x, y) {
             return false;
         }
     }
@@ -130,7 +142,7 @@ fn is_rectangle_valid(
     // Sample boundary and interior points more densely
     let sample_points = generate_sample_points(min_x, max_x, min_y, max_y);
     for (x, y) in sample_points {
-        if !is_point_valid(polygon, tile_set, x, y) {
+        if !is_point_valid_cached(polygon, tile_set, point_cache, x, y) {
             return false;
         }
     }
@@ -191,6 +203,28 @@ fn generate_sample_points(min_x: i32, max_x: i32, min_y: i32, max_y: i32) -> Vec
     ]);
 
     points
+}
+
+/// Check if a point is red or green (inside/on the polygon) with caching
+fn is_point_valid_cached(
+    polygon: &[(i32, i32)],
+    tile_set: &HashSet<(i32, i32)>,
+    cache: &mut HashMap<(i32, i32), bool>,
+    x: i32,
+    y: i32,
+) -> bool {
+    // Check cache first
+    if let Some(&result) = cache.get(&(x, y)) {
+        return result;
+    }
+
+    // Compute result
+    let result = is_point_valid(polygon, tile_set, x, y);
+
+    // Store in cache
+    cache.insert((x, y), result);
+
+    result
 }
 
 /// Check if a point is red or green (inside/on the polygon)
