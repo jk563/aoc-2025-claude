@@ -1,6 +1,7 @@
 //! Solution implementation for Day 9
 
 use crate::runner::Day;
+use std::collections::HashSet;
 
 /// Solver for Day 9
 pub struct Day09;
@@ -62,6 +63,15 @@ fn find_largest_rectangle(tiles: &[(i32, i32)]) -> i64 {
 fn find_largest_rectangle_in_polygon(tiles: &[(i32, i32)]) -> i64 {
     let mut max_area = 0i64;
 
+    // Optimization 1: Create HashSet for O(1) red tile lookups
+    let tile_set: HashSet<(i32, i32)> = tiles.iter().copied().collect();
+
+    // Optimization 2: Compute polygon bounding box for early rejection
+    let bbox_min_x = tiles.iter().map(|(x, _)| *x).min().unwrap();
+    let bbox_max_x = tiles.iter().map(|(x, _)| *x).max().unwrap();
+    let bbox_min_y = tiles.iter().map(|(_, y)| *y).min().unwrap();
+    let bbox_max_y = tiles.iter().map(|(_, y)| *y).max().unwrap();
+
     // Check all pairs of red tiles as corners
     for i in 0..tiles.len() {
         for j in (i + 1)..tiles.len() {
@@ -74,8 +84,14 @@ fn find_largest_rectangle_in_polygon(tiles: &[(i32, i32)]) -> i64 {
             let min_y = y1.min(y2);
             let max_y = y1.max(y2);
 
+            // Early rejection: rectangle must be within polygon bounding box
+            if min_x < bbox_min_x || max_x > bbox_max_x || min_y < bbox_min_y || max_y > bbox_max_y
+            {
+                continue;
+            }
+
             // Check if rectangle is valid (only contains red/green tiles)
-            if is_rectangle_valid(tiles, min_x, max_x, min_y, max_y) {
+            if is_rectangle_valid(tiles, &tile_set, min_x, max_x, min_y, max_y) {
                 let width = (max_x - min_x) as i64 + 1;
                 let height = (max_y - min_y) as i64 + 1;
                 let area = width * height;
@@ -91,6 +107,7 @@ fn find_largest_rectangle_in_polygon(tiles: &[(i32, i32)]) -> i64 {
 /// All four corners must be red or inside/on the polygon
 fn is_rectangle_valid(
     polygon: &[(i32, i32)],
+    tile_set: &HashSet<(i32, i32)>,
     min_x: i32,
     max_x: i32,
     min_y: i32,
@@ -105,7 +122,7 @@ fn is_rectangle_valid(
     ];
 
     for &(x, y) in &corners {
-        if !is_point_valid(polygon, x, y) {
+        if !is_point_valid(polygon, tile_set, x, y) {
             return false;
         }
     }
@@ -113,7 +130,7 @@ fn is_rectangle_valid(
     // Sample boundary and interior points more densely
     let sample_points = generate_sample_points(min_x, max_x, min_y, max_y);
     for (x, y) in sample_points {
-        if !is_point_valid(polygon, x, y) {
+        if !is_point_valid(polygon, tile_set, x, y) {
             return false;
         }
     }
@@ -177,9 +194,9 @@ fn generate_sample_points(min_x: i32, max_x: i32, min_y: i32, max_y: i32) -> Vec
 }
 
 /// Check if a point is red or green (inside/on the polygon)
-fn is_point_valid(polygon: &[(i32, i32)], x: i32, y: i32) -> bool {
-    // Check if point is a red tile
-    if polygon.iter().any(|&(px, py)| px == x && py == y) {
+fn is_point_valid(polygon: &[(i32, i32)], tile_set: &HashSet<(i32, i32)>, x: i32, y: i32) -> bool {
+    // Check if point is a red tile (O(1) with HashSet)
+    if tile_set.contains(&(x, y)) {
         return true;
     }
 
