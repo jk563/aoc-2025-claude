@@ -50,6 +50,7 @@ pub mod day06;
 pub mod day07;
 pub mod day08;
 pub mod day09;
+pub mod day10;
 
 /// Get all registered days
 ///
@@ -66,6 +67,7 @@ pub fn get_days() -> Vec<DayInfo> {
         register_day!(7, day07::Day07, "day07/input/input.txt"),
         register_day!(8, day08::Day08, "day08/input/input.txt"),
         register_day!(9, day09::Day09, "day09/input/input.txt"),
+        register_day!(10, day10::Day10, "day10/input/input.txt"),
     ]
 }
 
@@ -108,6 +110,8 @@ pub fn get_all_implementations() -> Vec<DayInfo> {
         register_day!(8, day08::Day08, "day08/input/input.txt"),
         // Day 9 - single implementation
         register_day!(9, day09::Day09, "day09/input/input.txt"),
+        // Day 10 - single implementation
+        register_day!(10, day10::Day10, "day10/input/input.txt"),
     ]
 }
 
