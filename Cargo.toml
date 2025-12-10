@@ -13,6 +13,7 @@ path = "src/lib.rs"
 
 [dependencies]
 # Keeping dependencies minimal - evaluate utility vs size for each addition
+good_lp = { version = "1.7", features = ["microlp"], default-features = false }  # Integer Linear Programming solver for Day 10 Part 2
 
 [dev-dependencies]
 # Test dependencies only

@@ -6,15 +6,16 @@
 //!
 //! ## Part 2: Joltage Counter Problem
 //! Configure numeric counters by incrementing them with buttons.
-//! Uses BFS on counter states (addition operations).
+//! Uses Integer Linear Programming to directly compute optimal solution.
 //!
-//! Both parts use BFS to guarantee minimum button presses.
+//! Part 1 uses BFS, Part 2 uses ILP to guarantee minimum button presses.
 //!
 //! ## Complexity
 //! - Part 1: O(2^n * b) where n = lights, b = buttons
-//! - Part 2: O(product(targets) * b) but heavily pruned
+//! - Part 2: O(b^3) using Simplex algorithm where b = buttons (typically 8-12)
 
 use crate::runner::Day;
+use good_lp::*;
 use std::collections::{HashSet, VecDeque};
 
 /// Solver for Day 10
@@ -34,7 +35,7 @@ impl Day for Day10 {
         let machines = parse_machines_part2(input);
         let total: usize = machines
             .iter()
-            .map(|m| min_presses_part2(&m.targets, &m.buttons))
+            .map(|m| min_presses_ilp(&m.targets, &m.buttons))
             .sum();
         total.to_string()
     }
@@ -202,57 +203,59 @@ fn parse_machine_line_part2(line: &str) -> MachinePart2 {
     MachinePart2 { targets, buttons }
 }
 
-/// Find minimum button presses for Part 2 using BFS
+/// Find minimum button presses using Integer Linear Programming
 ///
-/// This is a multi-dimensional counter problem where each button press
-/// increments specific counters by 1. We use BFS with aggressive pruning
-/// to find the minimum presses needed to reach target values.
-fn min_presses_part2(targets: &[u32], buttons: &[Vec<usize>]) -> usize {
+/// Models the problem as:
+/// - Variables: x[i] = number of times button i is pressed (integer, >= 0)
+/// - Objective: minimize sum(x[i])
+/// - Constraints: for each counter j, sum(x[i] where button i increments j) = target[j]
+///
+/// This directly computes the optimal solution using linear algebra instead of
+/// exploring the state space.
+fn min_presses_ilp(targets: &[u32], buttons: &[Vec<usize>]) -> usize {
     // Edge case: all targets already at zero
     if targets.iter().all(|&t| t == 0) {
         return 0;
     }
 
-    let n = targets.len();
-    let mut queue = VecDeque::new();
-    let mut visited = HashSet::new();
+    let num_buttons = buttons.len();
 
-    // Start state: all counters at zero
-    let start = vec![0u32; n];
-    queue.push_back((start.clone(), 0usize));
-    visited.insert(start);
+    // Create variables for button presses
+    let mut vars = ProblemVariables::new();
+    let button_vars: Vec<Variable> = (0..num_buttons)
+        .map(|_| vars.add(variable().min(0).integer()))
+        .collect();
 
-    while let Some((state, presses)) = queue.pop_front() {
-        // Check if we've reached the target
-        if state.iter().zip(targets).all(|(a, b)| a == b) {
-            return presses;
-        }
+    // Objective: minimize total button presses
+    let objective: Expression = button_vars.iter().copied().sum();
 
-        // Try pressing each button
-        for button in buttons {
-            let mut next_state = state.clone();
-            let mut valid = true;
+    // Build problem with constraints
+    let mut constraints = Vec::new();
+    for (counter_idx, &target) in targets.iter().enumerate() {
+        // Sum of all button presses that increment this counter
+        let constraint: Expression = buttons
+            .iter()
+            .enumerate()
+            .filter(|(_, button)| button.contains(&counter_idx))
+            .map(|(button_idx, _)| button_vars[button_idx])
+            .sum();
 
-            // Increment counters affected by this button
-            for &idx in button {
-                if idx < n {
-                    next_state[idx] += 1;
-                    // Prune: don't explore states where any counter exceeds target
-                    if next_state[idx] > targets[idx] {
-                        valid = false;
-                        break;
-                    }
-                }
-            }
-
-            // Only explore valid, unvisited states
-            if valid && visited.insert(next_state.clone()) {
-                queue.push_back((next_state, presses + 1));
-            }
-        }
+        constraints.push(constraint.eq(target as f64));
     }
 
-    unreachable!("No solution found for targets: {:?}", targets)
+    // Solve the problem (microlp is a pure Rust LP solver)
+    let solution = vars
+        .minimise(objective)
+        .using(microlp)
+        .with_all(constraints)
+        .solve()
+        .unwrap();
+
+    // Sum up the button presses (integer constraint guarantees integer solutions)
+    button_vars
+        .iter()
+        .map(|&v| solution.value(v).round() as usize)
+        .sum()
 }
 
 #[cfg(test)]
@@ -323,7 +326,7 @@ mod tests {
     fn test_machine_1_part2() {
         let line = "[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}";
         let machine = parse_machine_line_part2(line);
-        let presses = min_presses_part2(&machine.targets, &machine.buttons);
+        let presses = min_presses_ilp(&machine.targets, &machine.buttons);
         assert_eq!(presses, 10);
     }
 
@@ -331,7 +334,7 @@ mod tests {
     fn test_machine_2_part2() {
         let line = "[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}";
         let machine = parse_machine_line_part2(line);
-        let presses = min_presses_part2(&machine.targets, &machine.buttons);
+        let presses = min_presses_ilp(&machine.targets, &machine.buttons);
         assert_eq!(presses, 12);
     }
 
@@ -339,7 +342,7 @@ mod tests {
     fn test_machine_3_part2() {
         let line = "[.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}";
         let machine = parse_machine_line_part2(line);
-        let presses = min_presses_part2(&machine.targets, &machine.buttons);
+        let presses = min_presses_ilp(&machine.targets, &machine.buttons);
         assert_eq!(presses, 11);
     }
 
