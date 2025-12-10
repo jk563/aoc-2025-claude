@@ -1,21 +1,18 @@
 //! Solution implementation for Day 10: Factory Initialization
 //!
-//! This problem is essentially a "lights-out" puzzle where we need to find
-//! the minimum number of button presses to configure indicator lights.
+//! ## Part 1: Lights-Out Puzzle
+//! Configure indicator lights by toggling them with buttons.
+//! Uses BFS on bitmask states (XOR operations).
 //!
-//! ## Algorithm: BFS State Space Search
+//! ## Part 2: Joltage Counter Problem
+//! Configure numeric counters by incrementing them with buttons.
+//! Uses BFS on counter states (addition operations).
 //!
-//! - State: Current light configuration (represented as bitmask)
-//! - Start: All lights off (0)
-//! - Goal: Target pattern
-//! - Actions: Press a button (XOR with button mask)
-//!
-//! BFS guarantees we find the minimum number of presses.
+//! Both parts use BFS to guarantee minimum button presses.
 //!
 //! ## Complexity
-//! - Time: O(2^n * b) per machine, where n = lights, b = buttons
-//! - Space: O(2^n) for visited states
-//! - With n ≤ 10, this is very manageable (~1024 states max)
+//! - Part 1: O(2^n * b) where n = lights, b = buttons
+//! - Part 2: O(product(targets) * b) but heavily pruned
 
 use crate::runner::Day;
 use std::collections::{HashSet, VecDeque};
@@ -33,16 +30,26 @@ impl Day for Day10 {
         total.to_string()
     }
 
-    fn part2(&self, _input: &str) -> String {
-        // Part 2 not yet available
-        "0".to_string()
+    fn part2(&self, input: &str) -> String {
+        let machines = parse_machines_part2(input);
+        let total: usize = machines
+            .iter()
+            .map(|m| min_presses_part2(&m.targets, &m.buttons))
+            .sum();
+        total.to_string()
     }
 }
 
-/// Represents a machine with its target configuration and buttons
+/// Represents a machine with its target configuration and buttons (Part 1)
 struct Machine {
     target: u32,       // Target light pattern as bitmask
     buttons: Vec<u32>, // Each button as bitmask of lights it toggles
+}
+
+/// Represents a machine for Part 2 with joltage counters
+struct MachinePart2 {
+    targets: Vec<u32>,        // Target joltage values for each counter
+    buttons: Vec<Vec<usize>>, // Each button lists which counters it increments
 }
 
 /// Parse all machines from input
@@ -139,6 +146,115 @@ fn min_presses(target: u32, buttons: &[u32]) -> usize {
     unreachable!("No solution found for target: {}", target)
 }
 
+//=============================================================================
+// Part 2: Joltage Counter Problem
+//=============================================================================
+
+/// Parse all machines for Part 2 (joltage counters)
+fn parse_machines_part2(input: &str) -> Vec<MachinePart2> {
+    input
+        .lines()
+        .filter(|line| !line.is_empty())
+        .map(parse_machine_line_part2)
+        .collect()
+}
+
+/// Parse a single machine line for Part 2
+///
+/// Format: `[pattern] (button1) (button2) ... {joltage1,joltage2,...}`
+/// - Pattern: ignored in Part 2
+/// - Buttons: comma-separated counter indices
+/// - Joltage: target values for each counter
+fn parse_machine_line_part2(line: &str) -> MachinePart2 {
+    // Extract button configurations between ( and )
+    let mut buttons = Vec::new();
+    let mut pos = 0;
+
+    while let Some(button_start) = line[pos..].find('(') {
+        let button_start = pos + button_start;
+        if let Some(button_end) = line[button_start..].find(')') {
+            let button_end = button_start + button_end;
+            let button_str = &line[button_start + 1..button_end];
+
+            // Parse comma-separated counter indices
+            let counters: Vec<usize> = button_str
+                .split(',')
+                .filter_map(|s| s.trim().parse().ok())
+                .collect();
+
+            buttons.push(counters);
+            pos = button_end + 1;
+        } else {
+            break;
+        }
+    }
+
+    // Extract joltage requirements between { and }
+    let joltage_start = line.find('{').unwrap() + 1;
+    let joltage_end = line.find('}').unwrap();
+    let joltage_str = &line[joltage_start..joltage_end];
+
+    let targets: Vec<u32> = joltage_str
+        .split(',')
+        .filter_map(|s| s.trim().parse().ok())
+        .collect();
+
+    MachinePart2 { targets, buttons }
+}
+
+/// Find minimum button presses for Part 2 using BFS
+///
+/// This is a multi-dimensional counter problem where each button press
+/// increments specific counters by 1. We use BFS with aggressive pruning
+/// to find the minimum presses needed to reach target values.
+fn min_presses_part2(targets: &[u32], buttons: &[Vec<usize>]) -> usize {
+    // Edge case: all targets already at zero
+    if targets.iter().all(|&t| t == 0) {
+        return 0;
+    }
+
+    let n = targets.len();
+    let mut queue = VecDeque::new();
+    let mut visited = HashSet::new();
+
+    // Start state: all counters at zero
+    let start = vec![0u32; n];
+    queue.push_back((start.clone(), 0usize));
+    visited.insert(start);
+
+    while let Some((state, presses)) = queue.pop_front() {
+        // Check if we've reached the target
+        if state.iter().zip(targets).all(|(a, b)| a == b) {
+            return presses;
+        }
+
+        // Try pressing each button
+        for button in buttons {
+            let mut next_state = state.clone();
+            let mut valid = true;
+
+            // Increment counters affected by this button
+            for &idx in button {
+                if idx < n {
+                    next_state[idx] += 1;
+                    // Prune: don't explore states where any counter exceeds target
+                    if next_state[idx] > targets[idx] {
+                        valid = false;
+                        break;
+                    }
+                }
+            }
+
+            // Only explore valid, unvisited states
+            if valid && visited.insert(next_state.clone()) {
+                queue.push_back((next_state, presses + 1));
+            }
+        }
+    }
+
+    unreachable!("No solution found for targets: {:?}", targets)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -198,10 +314,41 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Remove this when Part 2 is unlocked
     fn test_part2_example() {
         let day = Day10;
-        assert_eq!(day.part2(EXAMPLE), "0");
+        assert_eq!(day.part2(EXAMPLE), "33");
+    }
+
+    #[test]
+    fn test_machine_1_part2() {
+        let line = "[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}";
+        let machine = parse_machine_line_part2(line);
+        let presses = min_presses_part2(&machine.targets, &machine.buttons);
+        assert_eq!(presses, 10);
+    }
+
+    #[test]
+    fn test_machine_2_part2() {
+        let line = "[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}";
+        let machine = parse_machine_line_part2(line);
+        let presses = min_presses_part2(&machine.targets, &machine.buttons);
+        assert_eq!(presses, 12);
+    }
+
+    #[test]
+    fn test_machine_3_part2() {
+        let line = "[.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}";
+        let machine = parse_machine_line_part2(line);
+        let presses = min_presses_part2(&machine.targets, &machine.buttons);
+        assert_eq!(presses, 11);
+    }
+
+    #[test]
+    fn test_parse_joltage() {
+        let line = "[.##.] (3) (1,3) {3,5,4,7}";
+        let machine = parse_machine_line_part2(line);
+        assert_eq!(machine.targets, vec![3, 5, 4, 7]);
+        assert_eq!(machine.buttons, vec![vec![3], vec![1, 3]]);
     }
 }
 
