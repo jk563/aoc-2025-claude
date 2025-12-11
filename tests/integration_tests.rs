@@ -16,9 +16,9 @@ fn test_runner_infrastructure() {
 #[test]
 fn test_runner_with_empty_days() {
     // Test that running with no days doesn't panic
-    let days = days::get_days();
-    let results = runner::run_all(&days);
-    assert_eq!(results.len(), days.len());
+    let empty_days: Vec<runner::DayInfo> = vec![];
+    let results = runner::run_all(&empty_days);
+    assert_eq!(results.len(), 0);
 }
 
 #[test]
