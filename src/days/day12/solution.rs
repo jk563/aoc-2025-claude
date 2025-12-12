@@ -414,7 +414,7 @@ mod tests {
 
         // Cross has 90° rotational symmetry, so should have fewer unique variants
         assert!(variants[0].len() <= 8);
-        assert!(variants[0].len() >= 1);
+        assert!(!variants[0].is_empty());
     }
 
     #[test]
