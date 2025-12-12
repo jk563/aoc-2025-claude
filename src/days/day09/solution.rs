@@ -601,14 +601,14 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // WIP: Alternative implementation not yet fully working
+    #[ignore] // WIP: Returns 8 instead of 24 - validation logic needs fixing
     fn test_part2_example_sweep_line() {
         let day = Day09SweepLine;
         assert_eq!(day.part2(EXAMPLE), "24");
     }
 
     #[test]
-    #[ignore] // WIP: Alternative implementation not yet fully working
+    #[ignore] // WIP: Returns 0 instead of 24 - validation logic needs fixing
     fn test_part2_example_spatial_grid() {
         let day = Day09SpatialGrid;
         assert_eq!(day.part2(EXAMPLE), "24");
