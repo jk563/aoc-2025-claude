@@ -16,6 +16,7 @@
 //! - Early rejection: Check area feasibility before backtracking
 //! - Bounding box pruning: Skip variants that exceed grid dimensions
 //! - First solution termination: Don't enumerate all packings
+//! - Flat grid layout: Vec<u8> with row-major indexing for cache locality
 //!
 //! Time: O(regions × W × H × V × branches) with heavy pruning
 //! Space: O(W × H) for grid + O(shapes × variants) for cache
@@ -68,7 +69,7 @@ type TransformCache = Vec<Vec<ShapeVariant>>;
 
 /// Grid for tracking occupied cells
 struct Grid {
-    occupied: Vec<Vec<bool>>,
+    occupied: Vec<u8>,
     width: usize,
     height: usize,
 }
@@ -76,7 +77,7 @@ struct Grid {
 impl Grid {
     fn new(width: usize, height: usize) -> Self {
         Self {
-            occupied: vec![vec![false; width]; height],
+            occupied: vec![0u8; width * height],
             width,
             height,
         }
@@ -244,8 +245,14 @@ fn can_place(grid: &Grid, variant: &ShapeVariant, base_x: usize, base_y: usize) 
         let x = base_x + dx as usize;
         let y = base_y + dy as usize;
 
-        // Check bounds and occupancy
-        if x >= grid.width || y >= grid.height || grid.occupied[y][x] {
+        // Check bounds
+        if x >= grid.width || y >= grid.height {
+            return false;
+        }
+
+        // Check occupancy with flat indexing
+        let idx = y * grid.width + x;
+        if grid.occupied[idx] != 0 {
             return false;
         }
     }
@@ -253,10 +260,12 @@ fn can_place(grid: &Grid, variant: &ShapeVariant, base_x: usize, base_y: usize) 
 }
 
 fn place(grid: &mut Grid, variant: &ShapeVariant, base_x: usize, base_y: usize, occupy: bool) {
+    let val = if occupy { 1u8 } else { 0u8 };
     for &(dx, dy) in &variant.cells {
         let x = base_x + dx as usize;
         let y = base_y + dy as usize;
-        grid.occupied[y][x] = occupy;
+        let idx = y * grid.width + x;
+        grid.occupied[idx] = val;
     }
 }
 
