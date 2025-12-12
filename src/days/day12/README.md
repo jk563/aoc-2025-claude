@@ -114,32 +114,40 @@ if can_place(grid, variant, x, y) {
 
 ## Alternative Approaches Considered
 
-1. **Smart Position Scanning**: Only try positions around the first empty cell
-   - **Why rejected**: Too restrictive - breaks correctness by eliminating valid solutions
-   - **Impact if it worked**: Could eliminate ~80% of position attempts
-   - **Lesson**: Heuristics must preserve the solution space
+1. **Smart Position Scanning**: Only try positions in bounding box around first empty cell
+   - **Status**: Implemented and tested, reverted due to test failures
+   - **Why it failed**: Too restrictive - eliminated valid solutions where shapes need to be placed elsewhere first
+   - **Test results**: Got "0" instead of "2" on example, broke small packing test
+   - **Lesson**: Heuristics that seem locally optimal can break global solution space
 
-2. **Symmetry Breaking**: Enforce ordering when placing duplicate shapes
+2. **Canonical Placement Order**: Only try positions that cover the first empty cell
+   - **Status**: Implemented and tested, reverted due to test failures
+   - **Why it failed**: Some valid packings require placing shapes that don't immediately cover the first empty cell
+   - **Test results**: Same failures as smart scanning - broke correctness
+   - **Lesson**: Even "canonical" orderings can be too restrictive for backtracking problems
+   - **Root cause**: The algorithm needs freedom to place shapes in non-obvious positions that enable later placements
+
+3. **Symmetry Breaking**: Enforce ordering when placing duplicate shapes
    - **Why not implemented**: Variable benefit (only helps regions with many duplicates)
    - **Impact**: ~30% speedup on some regions, negligible on others
    - **Tradeoff**: Added complexity for marginal average gain
 
-3. **Bit-Packed Grid**: Use `Vec<u64>` with bitwise operations
+4. **Bit-Packed Grid**: Use `Vec<u64>` with bitwise operations
    - **Why not implemented**: Grids fit width ≤ 64, but added complexity not worth ~20% gain
    - **Tradeoff**: Harder debugging, more complex code for modest speedup
 
-4. **Parallel Processing**: Use rayon to process regions concurrently
+5. **Parallel Processing**: Use rayon to process regions concurrently
    - **Why not implemented**: User constraint (no parallelization)
    - **Impact if allowed**: 4-8x speedup on multi-core systems
    - **Note**: Each region is independent - perfect for parallelization
 
-5. **Dancing Links (DLX)**: Exact cover algorithm for constraint satisfaction
+6. **Dancing Links (DLX)**: Exact cover algorithm for constraint satisfaction
    - **Why not implemented**: Overkill for this problem size
    - **Tradeoff**: Complex implementation, similar performance for these inputs
 
 ## Performance Analysis
 
-**Current Performance:** ~310ms total (155ms per part)
+**Current Performance:** ~289ms total (~137ms Part 1, ~153ms Part 2)
 
 **Bottleneck Breakdown:**
 - Backtracking search: 70-80% (trying all positions for each shape)
@@ -157,10 +165,11 @@ Further speedup would require:
 - Approximation algorithms (not applicable - need exact answer)
 - Problem-specific insights (none found that maintain correctness)
 
-**Verdict:** 310ms is quite good for:
+**Verdict:** 289ms is quite good for:
 - 1006 regions
 - 200-400 shapes per region
 - Full backtracking with heavy pruning
+- Multiple failed optimization attempts show this is near-optimal without parallelization
 
 ---
 

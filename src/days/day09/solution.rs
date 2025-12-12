@@ -617,5 +617,3 @@ mod tests {
 
 // Define benchmarks using the common macro
 crate::define_day_benches!(Day09);
-crate::define_day_benches!(Day09SweepLine);
-crate::define_day_benches!(Day09SpatialGrid);
